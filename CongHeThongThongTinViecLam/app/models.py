@@ -13,8 +13,8 @@ class User(UserMixin,db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = Column(String(100), nullable=False)
-    firstname = db.Column(db.String(50))
+    password = Column(String(255), nullable=False)
+    firstname = db.Column(db.String(200))
     lastname = db.Column(db.String(50))
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20))
