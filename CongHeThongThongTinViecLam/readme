@@ -1,0 +1,2 @@
+flask db migrate -m "update models"
+flask db upgrade
