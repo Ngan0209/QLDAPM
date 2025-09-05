@@ -4,13 +4,17 @@ from app.extensions import db
 from app.models import User, UserRole
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import upload_avatar
+from flask import redirect, url_for
 from flask import Blueprint, render_template
+from flask_login import login_required
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_bp.route("/register-screen",endpoint="register-screen")
 def register_screen():
     return render_template("auth/register.html")
+
+from flask import flash
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
@@ -26,13 +30,13 @@ def register():
 
     # Validate cơ bản
     if not username or not email or not password:
-        return jsonify({"error": "Thiếu thông tin bắt buộc"}), 400
+        return render_template("auth/login.html", error="Thiếu thông tin bắt buộc")
 
     if password != password_confirm:
-        return jsonify({"error": "Mật khẩu xác nhận không khớp"}), 400
+        return render_template("auth/login.html", error="Mật khẩu xác nhận không khớp")
 
     if User.query.filter((User.username == username) | (User.email == email)).first():
-        return jsonify({"error": "Username hoặc Email đã tồn tại"}), 400
+        return render_template("auth/login.html", error="Username hoặc Email đã tồn tại")
 
     # Hash password
     hashed_pw = generate_password_hash(password)
@@ -59,17 +63,32 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    # Thành công
+    return render_template("auth/login.html", message="Đăng ký thành công, hãy đăng nhập!")
+
+
+
+@auth_bp.route("/me", methods=["GET"])
+@login_required
+def get_user_info():
+    user = current_user
     return jsonify({
-        "message": "Đăng ký thành công",
         "user_id": user.id,
         "username": user.username,
         "email": user.email,
         "firstname": user.firstname,
         "lastname": user.lastname,
         "phone": user.phone,
-        "dob": user.dob,
-        "avatar_url": avatar_url
-    }), 201
+        "dob": user.dob.strftime("%Y-%m-%d") if user.dob else None,
+        "avatar_url": user.avatar,
+        "role": user.user_type.value
+    })
+
+@auth_bp.route("/profile", methods=["GET"])
+@login_required
+def profile_screen():
+    user = current_user
+    return render_template("auth/profile.html", user=user)
 
 
 @auth_bp.route("/login-screen",endpoint="login-screen")
@@ -81,16 +100,17 @@ def login():
     data = request.form
     username = data.get("username")
     password = data.get("password")
-    print(f"{username} - {password}")
+    remember = bool(data.get("remember"))
 
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password_hash(user.password, password):
-        return jsonify({"error": "Sai username hoặc password"}), 401
+        return render_template("auth/login.html", error="Sai username hoặc password"), 401
 
-    login_user(user)
-    return jsonify({"message": "Đăng nhập thành công", "user_id": user.id, "role": user.user_type.value})
+    login_user(user, remember=remember)
 
+    # Redirect sang trang profile
+    return redirect(url_for("auth.profile_screen"))
 
 
 @auth_bp.route("/logout", methods=["POST"])

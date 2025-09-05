@@ -26,6 +26,14 @@ class User(UserMixin,db.Model):
     reports = db.relationship("Report", backref="user", lazy=True)
     job_postings = db.relationship("JobPosting", backref="user", lazy=True)
     applications = db.relationship("JobApplication", backref="user", lazy=True)
+    job_applications = db.relationship("JobApplication", backref="user", lazy=True)
+
+
+class JobType(db.Model):
+    __tablename__ = "job_type"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(50), unique=True)
+    job_postings = db.relationship("JobPosting", backref="job_type", lazy=True)
 
 
 class Company(db.Model):
@@ -53,7 +61,7 @@ class JobPosting(db.Model):
     job_title = db.Column(db.String(100), nullable=False)
     job_description = db.Column(db.Text)
     benefits = db.Column(db.Text)
-    job_type = db.Column(db.String(50))
+    job_type_id = db.Column(db.Integer, db.ForeignKey("job_type.id"))
     salary_range = db.Column(db.String(50))
     status = db.Column(db.String(20))
     created_date = db.Column(db.Date)
