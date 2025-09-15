@@ -31,7 +31,7 @@ def upgrade():
             existing_nullable=True)
         batch_op.create_foreign_key(None, 'job_type', ['job_type'], ['id'])
 
-    # ### end Alembic commands ###
+
 
 
 def downgrade():

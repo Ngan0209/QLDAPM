@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>CV Builder — Panel trái / Preview A4 phải</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --panel-w:360px;
+      --a4-w:210mm;
+      --a4-h:297mm;
+    }
+    body{
+      margin:0;
+      font-family: "Inter", Arial, Helvetica, sans-serif;
+      background:#f1f3f5;
+      height:100vh;
+      overflow:hidden;
+      display:flex;
+    }
+
+    /* LEFT CONTROL PANEL */
+    .panel {
+      width:var(--panel-w);
+      background:#fff;
+      border-right:1px solid #e6e9ee;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      padding:12px;
+      overflow:auto;
+    }
+    .panel h3{ margin:8px 0 6px; font-size:15px; }
+    .control-row { margin-bottom:10px; }
+    .small { font-size:13px; color:#555; margin-bottom:6px; display:block; }
+    .btn { padding:8px 10px; border-radius:6px; border:0; cursor:pointer }
+    .btn-primary { background:#1976d2; color:white; }
+    .btn-ghost { background:#f5f7fa; color:#222; border:1px solid #e6e9ee; }
+
+    select, input[type="text"], input[type="number"], input[type="color"], .range {
+      width:100%;
+      box-sizing:border-box;
+      margin-bottom:8px;
+      padding:6px 8px;
+      border-radius:6px;
+      border:1px solid #e0e3e7;
+    }
+
+    .section-list { max-height:220px; overflow:auto; border:1px dashed #e6e9ee; padding:6px; border-radius:6px; }
+    .section-item { padding:8px; border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+    .section-item.active { background:#eef6ff; border:1px solid #c9e0ff; }
+    .small-ctrls button{ margin-left:6px; }
+
+    /* RIGHT: preview area */
+    .workspace {
+      flex:1;
+      display:flex;
+      justify-content:flex-end; /* preview bên phải */
+      padding:20px;
+      overflow:auto;
+    }
+    .a4 {
+      width:var(--a4-w);
+      min-height:var(--a4-h);
+      background:white;
+      box-shadow:0 8px 30px rgba(0,0,0,0.08);
+      padding:28px;
+      margin-left:20px;
+      box-sizing:border-box;
+      border-radius:4px;
+      overflow:auto;
+    }
+
+    /* header */
+    .cv-header { display:flex; gap:18px; align-items:center; margin-bottom:18px; }
+    .avatar {
+      width:110px; height:110px; border-radius:6px; background:#dfe6ea; display:flex; align-items:center; justify-content:center; color:#fff; font-size:36px; position:relative; overflow:hidden;
+      flex-shrink:0;
+      border:2px solid #fff;
+    }
+    .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .avatar .edit-photo { position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,0.55); color:#fff; font-size:12px; padding:4px 6px; border-radius:4px; display:none; cursor:pointer;}
+    .avatar:hover .edit-photo{ display:block; }
+
+    .person-info { flex:1; }
+    .person-info h1 { margin:0; font-size:22px; }
+    .person-info .jobtitle { color:#777; margin-top:4px; font-size:14px; }
+    .contact-list { margin-top:8px; font-size:13px; color:#333; }
+    .contact-list div { margin:4px 0; color:#444; }
+
+    /* sections */
+    .section-block { border-top:2px solid transparent; padding:12px 0; margin-bottom:12px; }
+    .section-block h4 { margin:0 0 8px 0; font-size:14px; letter-spacing:0.4px; text-transform:uppercase; }
+    .section-content { color:#444; font-size:13px; line-height:1.45; }
+
+    /* overlay small controls for each section on preview */
+    .section-actions { float:right; display:inline-flex; gap:6px; }
+    .section-actions button { font-size:12px; padding:4px 6px; border-radius:5px; border:1px solid #eee; cursor:pointer; background:#fff; }
+
+    /* footer controls */
+    .bottom-row { display:flex; gap:8px; margin-top:10px; align-items:center; }
+    .muted { color:#666; font-size:13px; }
+
+    /* responsive */
+    @media (max-width:1100px){
+      .panel { display:none; }
+      body { justify-content:center; }
+    }
+
+    /* contenteditable focus style */
+    [contenteditable]:focus { outline:2px dashed rgba(25,118,210,0.25); border-radius:4px; padding:2px; }
+  </style>
+</head>
+<body>
+
+  <div class="panel" id="leftPanel">
+    <h3>Thiết kế & Cấu hình</h3>
+
+    <div class="control-row">
+      <label class="small">Font</label>
+      <select id="fontFamily">
+        <option value="Arial, Helvetica, sans-serif">Arial</option>
+        <option value="Roboto, sans-serif">Roboto</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="'Times New Roman', Times, serif">Times New Roman</option>
+      </select>
+    </div>
+
+    <div class="control-row">
+      <label class="small">Cỡ chữ (toàn CV)</label>
+      <input id="fontSize" type="range" min="12" max="18" value="14" class="range">
+    </div>
+
+    <div class="control-row">
+      <label class="small">Khoảng cách dòng</label>
+      <input id="lineHeight" type="range" min="1" max="2" step="0.1" value="1.45" class="range">
+    </div>
+
+    <div class="control-row">
+      <label class="small">Màu chủ đề</label>
+      <input id="themeColor" type="color" value="#1a73e8">
+    </div>
+
+    <hr>
+
+    <h3>Ảnh & Header</h3>
+    <div class="control-row">
+      <label class="small">Upload ảnh (avatar)</label>
+      <input id="avatarInput" type="file" accept="image/*">
+    </div>
+    <div class="control-row">
+      <button class="btn btn-ghost" id="toggleEditBtn">🔓 Bật sửa (double-click cũng sửa)</button>
+    </div>
+
+    <hr>
+
+    <h3>Quản lý mục (Sections)</h3>
+    <div class="small">Chọn mục để cấu hình màu/ẩn/hiện hoặc di chuyển</div>
+    <div class="section-list" id="sectionList"></div>
+
+    <div style="margin-top:8px" class="control-row">
+      <select id="addTemplate">
+        <option value="career">Mục tiêu nghề nghiệp</option>
+        <option value="education">Học vấn</option>
+        <option value="experience">Kinh nghiệm</option>
+        <option value="skills">Kỹ năng</option>
+        <option value="certificates">Chứng chỉ</option>
+        <option value="awards">Giải thưởng</option>
+        <option value="references">Người giới thiệu</option>
+        <option value="custom">Mục tùy chỉnh</option>
+      </select>
+      <button id="addSectionBtn" class="btn btn-primary" style="margin-top:6px">➕ Thêm mục</button>
+    </div>
+
+    <div id="selectedControls" style="margin-top:12px; display:none; border-top:1px solid #f0f0f0; padding-top:8px;">
+      <div class="small">Cấu hình mục: <span id="selName" style="font-weight:600"></span></div>
+      <label class="small">Màu tiêu đề</label>
+      <input type="color" id="selTitleColor">
+      <label class="small">Màu nội dung</label>
+      <input type="color" id="selContentColor">
+      <div style="margin-top:8px;">
+        <label><input type="checkbox" id="selVisible"> Hiển thị</label>
+      </div>
+      <div style="margin-top:8px" class="small-ctrls">
+        <button class="btn btn-ghost" id="moveUpBtn">⬆️ Lên</button>
+        <button class="btn btn-ghost" id="moveDownBtn">⬇️ Xuống</button>
+        <button class="btn btn-ghost" id="deleteBtn" style="background:#fff1f0;color:#a11">🗑️ Xóa mục</button>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="control-row">
+      <button class="btn btn-primary" id="exportBtn">📤 Export JSON</button>
+      <button class="btn btn-ghost" id="saveLocalBtn">💾 Lưu local</button>
+      <button class="btn btn-ghost" id="loadLocalBtn">📥 Load local</button>
+    </div>
+
+    <div style="margin-top:6px" class="muted">Ghi chú: Bấm <strong>🔓 Bật sửa</strong> để cho phép chỉnh nội dung trực tiếp (contenteditable). Double-click vào phần preview cũng bật chế độ sửa nhanh.</div>
+  </div>
+
+  <!-- RIGHT WORKSPACE -->
+  <div class="workspace">
+    <div class="a4" id="preview" style="font-size:14px; line-height:1.45; font-family:Arial, Helvetica, sans-serif;">
+      <!-- Header -->
+      <div class="cv-header">
+        <div class="avatar" id="avatarBox" title="Double-click để thay ảnh">
+          <img id="avatarImg" src="" alt="" style="display:none;">
+          <div id="avatarPlaceholder">T</div>
+          <div class="edit-photo" onclick="triggerAvatar()">Sửa ảnh</div>
+        </div>
+
+        <div class="person-info">
+          <h1 id="name" contenteditable="false">Tên Người Dùng</h1>
+          <div class="jobtitle" id="jobtitle" contenteditable="false">Vị trí ứng tuyển</div>
+          <div class="contact-list" id="contactList">
+            <div id="dob" contenteditable="false"><strong>Ngày sinh:</strong> DD/MM/YYYY</div>
+            <div id="gender" contenteditable="false"><strong>Giới tính:</strong> Nam/Nữ</div>
+            <div id="phone" contenteditable="false"><strong>Số điện thoại:</strong> 0123 456 789</div>
+            <div id="email" contenteditable="false"><strong>Email:</strong> you@example.com</div>
+            <div id="website" contenteditable="false"><strong>Website:</strong> portfolio.me</div>
+            <div id="address" contenteditable="false"><strong>Địa chỉ:</strong> Quận A, Thành phố</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sectionsContainer"></div>
+
+    </div>
+  </div>
+
+  <input id="hiddenAvatarFile" type="file" accept="image/*" style="display:none">
+
+<script>
+/* ====== Data model ====== */
+let design = {
+  fontFamily: "Arial, Helvetica, sans-serif",
+  fontSize: 14,
+  lineHeight: 1.45,
+  themeColor: "#1a73e8"
+};
+
+let profile = {
+  name: "Tín Vũ",
+  jobtitle: "Vị trí ứng tuyển",
+  dob: "DD/MM/YYYY",
+  gender: "Nam/Nữ",
+  phone: "0123 456 789",
+  email: "you@example.com",
+  website: "portfolio.me",
+  address: "Quận A, Thành phố",
+  avatarDataUrl: "" // base64 image
+};
+
+let sections = [
+  { id: "sec1", key:"career_objective", title: "Mục tiêu nghề nghiệp", content: "<div>Nhập mục tiêu nghề nghiệp của bạn...</div>", titleColor:"#111", contentColor:"#444", visible:true },
+  { id: "sec2", key:"education", title: "Học vấn", content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên trường - Ngành học<br/>Mô tả học vấn</div>", titleColor:"#111", contentColor:"#444", visible:true },
+  { id: "sec3", key:"experience", title: "Kinh nghiệm làm việc", content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên công ty<br/>Vị trí công việc<br/>Mô tả</div>", titleColor:"#111", contentColor:"#444", visible:true },
+  { id: "sec4", key:"activities", title: "Hoạt động", content: "<div>Hoạt động & mô tả</div>", titleColor:"#111", contentColor:"#444", visible:true },
+  { id: "sec5", key:"skills", title: "Kỹ năng", content: "<div>- Kỹ năng 1<br/>- Kỹ năng 2</div>", titleColor:"#111", contentColor:"#444", visible:true }
+];
+
+let selectedSectionId = null;
+let editMode = false;
+
+/* ====== Helpers ====== */
+const byId = (id) => document.getElementById(id);
+
+function generateId(){ return 's'+Date.now() + Math.floor(Math.random()*1000); }
+
+/* ====== Render left section list and selected controls ====== */
+function renderSectionList(){
+  const el = byId('sectionList');
+  el.innerHTML = "";
+  sections.forEach((s, idx) => {
+    const div = document.createElement('div');
+    div.className = 'section-item' + (s.id===selectedSectionId ? ' active':'');
+    div.innerHTML = `<div>
+      <strong style="font-size:13px">${s.title}</strong>
+      <div style="font-size:12px;color:#666">${s.visible ? '' : '(Đã ẩn)'}</div>
+      </div>
+      <div style="display:flex;align-items:center">
+        <button title="Chọn" onclick="selectSection('${s.id}')" class="btn btn-ghost">Chọn</button>
+      </div>`;
+    el.appendChild(div);
+  });
+  // show/hide selected controls
+  if(!selectedSectionId){ byId('selectedControls').style.display='none'; return; }
+  byId('selectedControls').style.display='block';
+  const s = sections.find(x=>x.id===selectedSectionId);
+  byId('selName').textContent = s.title;
+  byId('selTitleColor').value = s.titleColor || '#000000';
+  byId('selContentColor').value = s.contentColor || '#444444';
+  byId('selVisible').checked = !!s.visible;
+}
+
+/* ====== Render preview A4 ====== */
+function renderPreview(){
+  // apply design
+  const preview = byId('preview');
+  preview.style.fontFamily = design.fontFamily;
+  preview.style.fontSize = design.fontSize + 'px';
+  preview.style.lineHeight = design.lineHeight;
+  preview.style.color = "#222";
+
+  // avatar
+  const avatarImg = byId('avatarImg');
+  const placeholder = byId('avatarPlaceholder');
+  if(profile.avatarDataUrl){
+    avatarImg.src = profile.avatarDataUrl;
+    avatarImg.style.display = 'block';
+    placeholder.style.display = 'none';
+  } else {
+    avatarImg.style.display = 'none';
+    placeholder.style.display = 'flex';
+    placeholder.textContent = profile.name ? profile.name.charAt(0).toUpperCase() : 'T';
+  }
+
+  // header fields
+  byId('name').innerText = profile.name;
+  byId('jobtitle').innerText = profile.jobtitle;
+  byId('dob').innerHTML = '<strong>Ngày sinh:</strong> ' + profile.dob;
+  byId('gender').innerHTML = '<strong>Giới tính:</strong> ' + profile.gender;
+  byId('phone').innerHTML = '<strong>Số điện thoại:</strong> ' + profile.phone;
+  byId('email').innerHTML = '<strong>Email:</strong> ' + profile.email;
+  byId('website').innerHTML = '<strong>Website:</strong> ' + profile.website;
+  byId('address').innerHTML = '<strong>Địa chỉ:</strong> ' + profile.address;
+
+  // sections
+  const container = byId('sectionsContainer');
+  container.innerHTML = '';
+  sections.forEach((s, idx) => {
+    if(!s.visible) return;
+    const block = document.createElement('div');
+    block.className = 'section-block';
+    block.style.borderTopColor = design.themeColor;
+    block.dataset.id = s.id;
+
+    // title + actions
+    const titleRow = document.createElement('div');
+    titleRow.style.display='flex';
+    titleRow.style.justifyContent='space-between';
+    titleRow.style.alignItems='center';
+
+    const h4 = document.createElement('h4');
+    h4.innerText = s.title;
+    h4.style.color = s.titleColor || '#111';
+    if(editMode){
+      h4.setAttribute('contenteditable','true');
+      h4.oninput = (e)=>{ s.title = h4.innerText; renderSectionList(); };
+    } else {
+      h4.setAttribute('contenteditable','false');
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'section-actions';
+    actions.innerHTML = `<button title="Up" onclick="moveSectionUp('${s.id}')">⬆</button>
+                         <button title="Down" onclick="moveSectionDown('${s.id}')">⬇</button>
+                         <button title="Hide/Show" onclick="toggleVisible('${s.id}')">${s.visible? '👁️':'🚫'}</button>`;
+    titleRow.appendChild(h4);
+    titleRow.appendChild(actions);
+
+    // content
+    const content = document.createElement('div');
+    content.className = 'section-content';
+    content.innerHTML = s.content;
+    content.style.color = s.contentColor || '#444';
+    if(editMode){
+      content.setAttribute('contenteditable','true');
+      content.oninput = (e)=> { s.content = content.innerHTML; updateOutput(); };
+    } else {
+      content.setAttribute('contenteditable','false');
+    }
+
+    // small spacer
+    block.appendChild(titleRow);
+    block.appendChild(content);
+    container.appendChild(block);
+  });
+
+  updateOutput();
+}
+
+/* ====== Select / Config section ====== */
+function selectSection(id){
+  selectedSectionId = id;
+  renderSectionList();
+}
+
+byId('selTitleColor').addEventListener('input', (e)=>{
+  const s = sections.find(x=>x.id===selectedSectionId); if(!s) return;
+  s.titleColor = e.target.value; renderPreview();
+});
+byId('selContentColor').addEventListener('input', (e)=>{
+  const s = sections.find(x=>x.id===selectedSectionId); if(!s) return;
+  s.contentColor = e.target.value; renderPreview();
+});
+byId('selVisible').addEventListener('change', (e)=>{
+  const s = sections.find(x=>x.id===selectedSectionId); if(!s) return;
+  s.visible = e.target.checked; renderSectionList(); renderPreview();
+});
+byId('moveUpBtn').addEventListener('click', ()=>{
+  const idx = sections.findIndex(x=>x.id===selectedSectionId); if(idx>0){ sections.splice(idx-1,0, sections.splice(idx,1)[0]); renderSectionList(); renderPreview(); }
+});
+byId('moveDownBtn').addEventListener('click', ()=>{
+  const idx = sections.findIndex(x=>x.id===selectedSectionId); if(idx>=0 && idx<sections.length-1){ sections.splice(idx+1,0, sections.splice(idx,1)[0]); renderSectionList(); renderPreview(); }
+});
+byId('deleteBtn').addEventListener('click', ()=>{
+  if(!confirm('Xóa mục này?')) return;
+  const idx = sections.findIndex(x=>x.id===selectedSectionId);
+  if(idx>=0){ sections.splice(idx,1); selectedSectionId=null; renderSectionList(); renderPreview(); }
+});
+
+/* ====== Add section ====== */
+byId('addSectionBtn').addEventListener('click', ()=>{
+  const tpl = byId('addTemplate').value;
+  let newId = generateId();
+  let item;
+  switch(tpl){
+    case 'career': item={id:newId,key:'career_objective',title:'Mục tiêu nghề nghiệp',content:'<div>Nhập mục tiêu nghề nghiệp...</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    case 'education': item={id:newId,key:'education',title:'Học vấn',content:'<div>Tên trường - Ngành học - Thời gian</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    case 'experience': item={id:newId,key:'experience',title:'Kinh nghiệm',content:'<div>Tên công ty - Vị trí - Mô tả</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    case 'skills': item={id:newId,key:'skills',title:'Kỹ năng',content:'<div>- Kỹ năng 1<br/>- Kỹ năng 2</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    case 'certificates': item={id:newId,key:'certificates',title:'Chứng chỉ',content:'<div>Tên chứng chỉ - Thời gian</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    case 'awards': item={id:newId,key:'awards',title:'Giải thưởng',content:'<div>Tên giải thưởng - Thời gian</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    case 'references': item={id:newId,key:'references',title:'Người giới thiệu',content:'<div>Tên - Chức vụ - Liên hệ</div>', titleColor:'#111', contentColor:'#444', visible:true}; break;
+    default: item={id:newId,key:'custom',title:'Mục mới',content:'<div>Nội dung...</div>', titleColor:'#111', contentColor:'#444', visible:true};
+  }
+  sections.push(item);
+  selectedSectionId = item.id;
+  renderSectionList();
+  renderPreview();
+});
+
+/* ====== Move / Toggle helpers used in preview action buttons ====== */
+function moveSectionUp(id){ const idx = sections.findIndex(x=>x.id===id); if(idx>0){ sections.splice(idx-1,0, sections.splice(idx,1)[0]); renderSectionList(); renderPreview(); } }
+function moveSectionDown(id){ const idx = sections.findIndex(x=>x.id===id); if(idx>=0 && idx<sections.length-1){ sections.splice(idx+1,0, sections.splice(idx,1)[0]); renderSectionList(); renderPreview(); } }
+function toggleVisible(id){ const s = sections.find(x=>x.id===id); if(s){ s.visible = !s.visible; renderSectionList(); renderPreview(); } }
+
+/* ====== Avatar upload ====== */
+byId('avatarInput').addEventListener('change', (e)=> handleAvatarFile(e.target.files));
+function triggerAvatar(){ byId('avatarInput').click(); }
+function handleAvatarFile(files){
+  if(!files || files.length===0) return;
+  const f = files[0];
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    profile.avatarDataUrl = ev.target.result;
+    renderPreview();
+  }
+  reader.readAsDataURL(f);
+}
+
+/* ====== Edit mode toggle: enable contenteditable on preview fields ====== */
+byId('toggleEditBtn').addEventListener('click', ()=>{
+  editMode = !editMode;
+  byId('toggleEditBtn').textContent = editMode ? '🔒 Tắt sửa' : '🔓 Bật sửa';
+  // set contenteditable for header fields
+  ['name','jobtitle','dob','gender','phone','email','website','address'].forEach(id=>{
+    byId(id).contentEditable = editMode;
+    // when edited, update profile model
+    byId(id).oninput = (e)=>{
+      const key = id;
+      if(key==='name') profile.name = byId('name').innerText;
+      if(key==='jobtitle') profile.jobtitle = byId('jobtitle').innerText;
+      if(key==='dob') profile.dob = byId('dob').innerText.replace('Ngày sinh:','').trim();
+      if(key==='gender') profile.gender = byId('gender').innerText.replace('Giới tính:','').trim();
+      if(key==='phone') profile.phone = byId('phone').innerText.replace('Số điện thoại:','').trim();
+      if(key==='email') profile.email = byId('email').innerText.replace('Email:','').trim();
+      if(key==='website') profile.website = byId('website').innerText.replace('Website:','').trim();
+      if(key==='address') profile.address = byId('address').innerText.replace('Địa chỉ:','').trim();
+    }
+  });
+
+  // sections content editable handled in renderPreview()
+  renderPreview();
+});
+
+/* ====== Global design controls ====== */
+byId('fontFamily').addEventListener('change', (e)=>{ design.fontFamily = e.target.value; renderPreview(); });
+byId('fontSize').addEventListener('input', (e)=>{ design.fontSize = Number(e.target.value); renderPreview(); });
+byId('lineHeight').addEventListener('input', (e)=>{ design.lineHeight = Number(e.target.value); renderPreview(); });
+byId('themeColor').addEventListener('input', (e)=>{ design.themeColor = e.target.value; renderPreview(); });
+
+/* ====== Save / Load / Export ====== */
+function updateOutput(){
+  const data = { profile, sections, design };
+  byId('output').textContent = JSON.stringify(data, null, 2);
+}
+
+byId('saveLocalBtn').addEventListener('click', ()=>{
+  const data = { profile, sections, design };
+  localStorage.setItem('cv_builder_data', JSON.stringify(data));
+  alert('Đã lưu localStorage');
+});
+byId('loadLocalBtn').addEventListener('click', ()=>{
+  const raw = localStorage.getItem('cv_builder_data');
+  if(!raw){ alert('Không tìm thấy dữ liệu local'); return; }
+  const d = JSON.parse(raw);
+  profile = d.profile || profile;
+  sections = d.sections || sections;
+  design = d.design || design;
+  selectedSectionId = null;
+  renderSectionList();
+  renderPreview();
+  alert('Đã load từ localStorage');
+});
+byId('exportBtn').addEventListener('click', ()=>{
+  const data = { profile, sections, design };
+  const text = JSON.stringify(data, null, 2);
+  const blob = new Blob([text], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'cv_data.json'; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+/* ====== Double-click on preview to toggle edit for that element ====== */
+document.getElementById('preview').addEventListener('dblclick', (e)=>{
+  // if dblclick on some content make it editable briefly
+  const el = e.target;
+  if(!editMode){
+    // toggle global edit
+    editMode = true;
+    byId('toggleEditBtn').textContent = '🔒 Tắt sửa';
+    ['name','jobtitle','dob','gender','phone','email','website','address'].forEach(id=> byId(id).contentEditable = true);
+    renderPreview();
+  }
+});
+
+/* ====== init ====== */
+selectSection(null);
+renderSectionList();
+renderPreview();
+updateOutput();
+</script>
+
+</body>
+</html>

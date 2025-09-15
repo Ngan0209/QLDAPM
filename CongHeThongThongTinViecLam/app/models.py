@@ -2,7 +2,9 @@ from .extensions import  db
 from enum import Enum as RoleEnum
 from sqlalchemy import Column, Integer, String, Enum, Date, ForeignKey, Boolean, Float,UniqueConstraint
 from flask_login import UserMixin
-
+from sqlalchemy.types import Text
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects import postgresql
 class UserRole(RoleEnum):
     admin = "admin"
     candidate = "candidate"
@@ -25,8 +27,7 @@ class User(UserMixin,db.Model):
     comments = db.relationship("Comment", backref="user", lazy=True)
     reports = db.relationship("Report", backref="user", lazy=True)
     job_postings = db.relationship("JobPosting", backref="user", lazy=True)
-    applications = db.relationship("JobApplication", backref="user", lazy=True)
-    job_applications = db.relationship("JobApplication", backref="user", lazy=True)
+    job_applications = db.relationship("JobApplication", backref="job_application_user", lazy=True)
 
 
 class JobType(db.Model):
@@ -114,29 +115,16 @@ class Report(db.Model):
 class JobApplication(db.Model):
     __tablename__ = "job_application"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    career_objective = db.Column(db.Text)
-    education_history = db.Column(db.Text)
-    experience = db.Column(db.Text)
-    skills = db.Column(db.Text)
-    references = db.Column(db.Text)
-
-
+    cv_data = db.Column(JSON, nullable=False)
+    design = db.Column(JSON, nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    avatar = db.Column(db.String(255), nullable = False)
 
 
-    additional_infos = db.relationship("AdditionalInfo", backref="job_application", lazy=True)
     applications = db.relationship("Application", backref="job_application", lazy=True)
 
 
 
-class AdditionalInfo(db.Model):
-    __tablename__ = "additional_info"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.String(100))
-    content = db.Column(db.Text)
-
-
-    job_application_id = db.Column(db.Integer, db.ForeignKey("job_application.id"))
 
 
 

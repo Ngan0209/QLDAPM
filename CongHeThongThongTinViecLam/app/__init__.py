@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from .extensions import db, login, migrate   # lấy từ extensions
 from .routes.home import home_bp
 from .routes.auth import auth_bp
+from .routes.job_application import cv_bp
 from .models import User
 
 load_dotenv()
@@ -37,5 +38,6 @@ def create_app():
     # đăng ký blueprint
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(cv_bp, url_prefix="/cv")
 
     return app
