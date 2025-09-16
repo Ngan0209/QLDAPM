@@ -1,0 +1,532 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link href="https://cdn.jsdelivr.net/npm/gridstack@8.2.0/dist/gridstack.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" rel="stylesheet">
+<style>
+  .template-builder {
+    display: flex;
+    gap: 25px;
+    min-height: 700px;
+  }
+
+  /* Widget palette lớn hơn */
+  .widget-palette {
+    width: 280px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    height: fit-content;
+  }
+
+  .widget-palette h5 {
+    color: #495057;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .widget-category {
+    margin-bottom: 25px;
+  }
+
+  .widget-category h6 {
+    color: #6c757d;
+    font-size: 16px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .widget-item {
+    background: white;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  .widget-item:hover {
+    border-color: #007bff;
+    background: #e7f3ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .widget-item i {
+    color: #3b7ddd;
+    font-size: 18px;
+  }
+
+  .widget-item span {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  /* Khung A4 với tỷ lệ chuẩn */
+  .a4-paper-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: #f0f2f5;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .a4-paper {
+    width: 595px;
+    /* Chiều rộng A4 portrait (210mm) */
+    height: 842px;
+    /* Chiều cao A4 portrait (297mm) */
+    background: white;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ccc;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grid-stack {
+    width: 100% !important;
+    height: 100% !important;
+    background: white;
+    margin: 0 !important;
+  }
+
+  .grid-stack-item {
+    border: 2px dashed #007bff;
+  }
+
+  .grid-stack-item-content {
+    background: linear-gradient(135deg, #4a6cf7 0%, #6a79f7 100%);
+    color: white;
+    border-radius: 6px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    height: 100%;
+    position: relative;
+    text-align: center;
+  }
+
+  .grid-stack-item-content:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .widget-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+  }
+
+  .grid-stack-item:hover .widget-actions {
+    display: flex;
+  }
+
+  .widget-actions button {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-left: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #dc3545;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px;
+    color: #6c757d;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+  }
+
+  .empty-state i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+
+  .empty-state p {
+    font-size: 17px;
+    margin: 0;
+  }
+
+  /* Responsive cho màn hình nhỏ */
+  @media (max-width: 1200px) {
+    .template-builder {
+      flex-direction: column;
+    }
+
+    .widget-palette {
+      width: 100%;
+      margin-bottom: 25px;
+    }
+
+    .a4-paper {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 210 / 297;
+      /* Tỷ lệ A4 */
+      max-width: 595px;
+      max-height: 842px;
+    }
+  }
+
+  /* Cải thiện responsive cho màn hình rất nhỏ */
+  @media (max-width: 768px) {
+    .a4-paper-container {
+      padding: 15px;
+    }
+    
+    .a4-paper {
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .grid-stack-item-content {
+      font-size: 13px;
+      padding: 10px;
+    }
+    
+    .widget-palette {
+      padding: 15px;
+    }
+    
+    .widget-item {
+      padding: 10px;
+      font-size: 14px;
+    }
+  }
+
+  /* Cải thiện form controls */
+  .form-label {
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .form-control {
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="page-header d-print-none">
+    <div class="row align-items-center">
+      <div class="col">
+        <h2 class="page-title">{{ title }}</h2>
+        <div class="text-muted mt-1">Kéo và thả các thành phần để tạo template CV (Khung A4)</div>
+      </div>
+    </div>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% if form.csrf_token %}
+    {{ form.csrf_token }}
+    {% endif %}
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Thông tin template</h5>
+            <div class="mb-3">
+              {{ form.name.label(class_="form-label") }}
+              {{ form.name(class_="form-control", placeholder="Nhập tên template") }}
+            </div>
+            <div class="mb-3">
+              {{ form.background.label(class_="form-label") }}
+              {{ form.background(class_="form-control") }}
+              <div class="form-text">URL hoặc đường dẫn ảnh nền cho template</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="template-builder">
+      <!-- Palette -->
+      <div class="widget-palette">
+        <h5>Thành phần CV</h5>
+
+        <div class="widget-category">
+          <h6>Thông tin cá nhân</h6>
+          <div class="widget-item" data-widget="avatar" data-label="Ảnh đại diện" data-w="4" data-h="4" data-minw="2" data-minh="2">
+            <i class="ti ti-user"></i><span>Ảnh đại diện</span>
+          </div>
+          <div class="widget-item" data-widget="name" data-label="Họ và tên" data-w="6" data-h="1" data-minw="3" data-minh="1">
+            <i class="ti ti-id"></i><span>Họ và tên</span>
+          </div>
+          <div class="widget-item" data-widget="contact" data-label="Thông tin liên hệ" data-w="6" data-h="2" data-minw="3" data-minh="1">
+            <i class="ti ti-address-book"></i><span>Thông tin liên hệ</span>
+          </div>
+        </div>
+
+        <div class="widget-category">
+          <h6>Nội dung chính</h6>
+          <div class="widget-item" data-widget="objective" data-label="Mục tiêu nghề nghiệp" data-w="12" data-h="2" data-minw="6" data-minh="1">
+            <i class="ti ti-target"></i><span>Mục tiêu nghề nghiệp</span>
+          </div>
+          <div class="widget-item" data-widget="experience" data-label="Kinh nghiệm làm việc" data-w="12" data-h="4" data-minw="6" data-minh="2">
+            <i class="ti ti-briefcase"></i><span>Kinh nghiệm làm việc</span>
+          </div>
+          <div class="widget-item" data-widget="education" data-label="Học vấn" data-w="12" data-h="3" data-minw="6" data-minh="2">
+            <i class="ti ti-school"></i><span>Học vấn</span>
+          </div>
+          <div class="widget-item" data-widget="skills" data-label="Kỹ năng" data-w="6" data-h="3" data-minw="3" data-minh="2">
+            <i class="ti ti-tools"></i><span>Kỹ năng</span>
+          </div>
+        </div>
+
+        <div class="widget-category">
+          <h6>Bổ sung</h6>
+          <div class="widget-item" data-widget="certificates" data-label="Chứng chỉ" data-w="6" data-h="2" data-minw="3" data-minh="1">
+            <i class="ti ti-certificate"></i><span>Chứng chỉ</span>
+          </div>
+          <div class="widget-item" data-widget="awards" data-label="Giải thưởng" data-w="6" data-h="2" data-minw="3" data-minh="1">
+            <i class="ti ti-award"></i><span>Giải thưởng</span>
+          </div>
+          <div class="widget-item" data-widget="activities" data-label="Hoạt động" data-w="6" data-h="2" data-minw="3" data-minh="1">
+            <i class="ti ti-activity"></i><span>Hoạt động</span>
+          </div>
+          <div class="widget-item" data-widget="hobbies" data-label="Sở thích" data-w="6" data-h="2" data-minw="3" data-minh="1">
+            <i class="ti ti-heart"></i><span>Sở thích</span>
+          </div>
+          <div class="widget-item" data-widget="references" data-label="Người tham chiếu" data-w="6" data-h="2" data-minw="3" data-minh="1">
+            <i class="ti ti-users"></i><span>Người tham chiếu</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid layout A4 -->
+      <div class="a4-paper-container">
+        <div class="a4-paper">
+          <div id="grid-container" class="grid-stack">
+            <div class="empty-state">
+              <i class="ti ti-drag-drop"></i>
+              <p>Kéo các thành phần từ bên trái vào đây để bắt đầu thiết kế</p>
+            </div>
+          </div>
+        </div>
+        {{ form.layout_json(class_="d-none", id="layout_json") }}
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="ti ti-check me-2"></i>Lưu Template
+            </button>
+            <a href="{{ url_for('.index_view') }}" class="btn btn-secondary btn-lg ms-2">
+              <i class="ti ti-x me-2"></i>Hủy
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/gridstack@8.2.0/dist/gridstack-all.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Khởi tạo grid với 12 columns cho A4
+    const grid = GridStack.init({
+      cellHeight: 70, // Chiều cao cell phù hợp với A4
+      float: true,
+      acceptWidgets: true,
+      removable: true,
+      removeTimeout: 100,
+      column: 12,  
+      minRow: 1,   // 12 columns cho A4
+      resizable: {
+        handles: 'all'
+      },
+      // Cho phép kích thước nhỏ hơn
+      margin: 5,
+      disableOneColumnMode: true
+    });
+
+    const layoutField = document.getElementById('layout_json');
+    const emptyState = document.querySelector('.empty-state');
+
+    // Load layout cũ nếu có
+    function loadLayout() {
+      if (layoutField && layoutField.value) {
+        try {
+          const nodes = JSON.parse(layoutField.value);
+          if (nodes && nodes.length > 0) {
+            emptyState.style.display = 'none';
+            grid.removeAll(false);
+
+            nodes.forEach(n => {
+              grid.addWidget({
+                x: n.x,
+                y: n.y,
+                w: n.w || 3, 
+                h: n.h || 2,
+                minW: n.minW || 1, 
+                minH: n.minH || 1,
+                content: `
+                <div class="grid-stack-item-content">
+                  ${n.widget}
+                  <div class="widget-actions">
+                    <button class="remove-widget">&times;</button>
+                  </div>
+                </div>
+              `,
+                noMove: false,
+                noResize: false,
+                id: n.id
+              });
+            });
+          }
+        } catch (e) {
+          console.error('Invalid layout JSON', e);
+        }
+      }
+    }
+
+    // Thiết lập drag từ palette
+    document.querySelectorAll('.widget-item').forEach(item => {
+      item.addEventListener('dragstart', function (e) {
+        const data = {
+          widget: this.dataset.widget,
+          label: this.dataset.label,
+          w: parseInt(this.dataset.w),
+          h: parseInt(this.dataset.h),
+          minW: parseInt(this.dataset.minw) || 1,
+          minH: parseInt(this.dataset.minh) || 1
+        };
+        e.dataTransfer.setData('text/plain', JSON.stringify(data));
+      });
+    });
+
+    // Xử lý drop
+    grid.el.addEventListener('dragover', function (e) {
+      e.preventDefault();
+    });
+
+    grid.el.addEventListener('drop', function (e) {
+      e.preventDefault();
+      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+      emptyState.style.display = 'none';
+
+      // Lấy vị trí drop tương đối trong grid
+      const rect = grid.el.getBoundingClientRect();
+      const cellWidth = rect.width / 12;
+      const cellHeight = grid.opts.cellHeight;
+
+      const x = Math.floor((e.clientX - rect.left) / cellWidth);
+      const y = Math.floor((e.clientY - rect.top) / cellHeight);
+
+      grid.addWidget({
+        x: x,
+        y: y,
+        w: data.w || 3, 
+        h: data.h || 2,
+        minW: data.minW || 1, 
+        minH: data.minH || 1,
+        content: `
+        <div class="grid-stack-item-content">
+          ${data.label}
+          <div class="widget-actions">
+            <button class="remove-widget">&times;</button>
+          </div>
+        </div>
+      `,
+        noMove: false,
+        noResize: false
+      });
+
+      updateLayout();
+    });
+
+    // Xử lý xóa widget
+    grid.el.addEventListener('click', function (e) {
+      if (e.target.classList.contains('remove-widget')) {
+        const widget = e.target.closest('.grid-stack-item');
+        grid.removeWidget(widget, true);
+        updateLayout();
+      }
+    });
+
+    // Cập nhật layout JSON
+    function updateLayout() {
+      const nodes = grid.engine.nodes.map((node, index) => ({
+        id: node.id || `widget-${index}`,
+        x: node.x,
+        y: node.y,
+        w: node.w,
+        h: node.h,
+        minW: node.minW || 1,
+        minH: node.minH || 1,
+        widget: node.el.querySelector('.grid-stack-item-content').textContent.trim()
+      }));
+
+      layoutField.value = JSON.stringify(nodes);
+
+      // Hiển thị empty state nếu không có widget
+      if (nodes.length === 0) {
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+      }
+    }
+
+    // Lắng nghe sự thay đổi
+    grid.on('change', updateLayout);
+    grid.on('removed', updateLayout);
+
+    // Khởi tạo layout
+    loadLayout();
+  });
+</script>
+{% endblock %}

@@ -5,6 +5,7 @@ from flask_login import UserMixin
 from sqlalchemy.types import Text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.dialects import postgresql
+from datetime import datetime
 class UserRole(RoleEnum):
     admin = "admin"
     candidate = "candidate"
@@ -20,7 +21,7 @@ class User(UserMixin,db.Model):
     lastname = db.Column(db.String(50))
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20))
-    user_type = Column(Enum(UserRole), default=UserRole.candidate)
+    user_type = db.Column(db.String(20), default=UserRole.candidate.value)
     dob = db.Column(db.Date)
     avatar = db.Column(db.String(255))
 
@@ -111,6 +112,13 @@ class Report(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("job_posting.id"))
 
 
+class Templates(db.Model):
+    __tablename__ = "templates"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    background = db.Column(db.String(255), nullable=True)  # URL hoặc path ảnh background
+    layout_json = db.Column(db.JSON, nullable=True)       # layout Gridstack JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class JobApplication(db.Model):
     __tablename__ = "job_application"
@@ -118,7 +126,7 @@ class JobApplication(db.Model):
     cv_data = db.Column(JSON, nullable=False)
     design = db.Column(JSON, nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    avatar = db.Column(db.String(255), nullable = False)
+    avatar = db.Column(db.String(255), nullable = True)
 
 
     applications = db.relationship("Application", backref="job_application", lazy=True)

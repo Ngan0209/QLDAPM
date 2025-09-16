@@ -12,6 +12,22 @@
 
     <!-- Custom CSS -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> -->
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        footer {
+            background: #f1f3f5;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+
+    <!-- Block để trang con ghi đè -->
+    {% block styles %}{% endblock %}
 </head>
 
 <body>
@@ -39,7 +55,7 @@
                         </form>
                     </li>
                     <li class="nav-item">
-                        <a class="navbar-brand fw-bold" href="{{ url_for('cv.create_cv') }}" >
+                        <a class="nav-link" href="{{ url_for('cv.create_form') }}" >
                             Tạo CV
                         </a>
                     </li>

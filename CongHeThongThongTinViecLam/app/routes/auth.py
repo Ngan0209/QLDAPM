@@ -55,7 +55,7 @@ def register():
         firstname=firstname,
         lastname=lastname,
         phone=phone,
-        user_type=UserRole.candidate,
+        user_type=UserRole.candidate.value,
         dob=dob,
         avatar=avatar_url
     )
@@ -103,19 +103,18 @@ def login():
     remember = bool(data.get("remember"))
 
     user = User.query.filter_by(username=username).first()
-
     if not user or not check_password_hash(user.password, password):
         return render_template("auth/login.html", error="Sai username hoặc password"), 401
 
     login_user(user, remember=remember)
+    if user.user_type == UserRole.admin.value:
+        return redirect(url_for("admin.index"))
 
     # Redirect sang trang profile
     return redirect(url_for("auth.profile_screen"))
 
 
-@auth_bp.route("/logout", methods=["POST"])
+@auth_bp.route('/logout', methods=['GET', 'POST'])
 def logout():
-    if current_user.is_authenticated:
-        logout_user()
-        return jsonify({"message": "Đăng xuất thành công"})
-    return jsonify({"error": "Chưa đăng nhập"}), 400
+    logout_user()
+    return redirect(url_for('auth.login-screen'))
