@@ -14,7 +14,6 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 def register_screen():
     return render_template("auth/register.html")
 
-from flask import flash
 
 @auth_bp.route("/register", methods=["POST"])
 def register():

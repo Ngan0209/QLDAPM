@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách CV Templates{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Danh sách mẫu CV</h2>
+
+  <div class="row">
+    {% for t in templates %}
+      <div class="col-md-3 mb-4">
+        <div class="card shadow-sm h-100">
+          
+          <!-- Background preview -->
+          <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+               style="height: 220px; overflow: hidden;">
+            {% if t.background %}
+              <img src="{{ t.background }}"
+                   alt="{{ t.name }}"
+                   class="img-fluid"
+                   style="object-fit: cover; width: 100%; height: 100%;">
+            {% else %}
+              <span class="text-muted">Không có ảnh</span>
+            {% endif %}
+          </div>
+
+          <!-- Info -->
+          <div class="card-body text-center">
+            <h5 class="card-title">{{ t.name }}</h5>
+            <p class="card-text">
+              <small class="text-muted">
+                Tạo lúc {{ t.created_at.strftime("%Y-%m-%d %H:%M") }}
+              </small>
+            </p>
+            <a href="{{ url_for('cv.get_template_detail', template_id=t.id) }}"
+   class="btn btn-primary btn-sm">
+   Xem chi tiết
+</a>
+          </div>
+
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info">
+          Chưa có template nào được tạo.
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
