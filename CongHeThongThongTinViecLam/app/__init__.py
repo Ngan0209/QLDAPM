@@ -4,13 +4,16 @@ import os
 from dotenv import load_dotenv
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+
 from .models import User, Templates
 from .extensions import db, login, migrate   # lấy từ extensions
+from .routes.company import company_bp
 from .routes.home import home_bp
 from .routes.auth import auth_bp
 from .routes.job_application import cv_bp
 from .models import User
 from .admin.admin import init_admin
+from .routes.job_posting import job_posting_bp
 
 load_dotenv()
 
@@ -43,6 +46,7 @@ def create_app():
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(cv_bp, url_prefix="/cv")
-
+    app.register_blueprint(job_posting_bp, url_prefix="/job")
+    app.register_blueprint(company_bp, url_prefix="/company")
 
     return app

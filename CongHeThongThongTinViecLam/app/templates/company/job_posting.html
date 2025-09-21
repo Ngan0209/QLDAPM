@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+    {% set fd = form_data if form_data is defined else None %}
+    <div class="container mt-4">
+        <h3 class="mb-4">
+            {% if edit_mode %}Chỉnh sửa tin tuyển dụng{% else %}Đăng tin tuyển dụng{% endif %}
+        </h3>
+        <form method="post">
+            <div class="mb-3">
+                <label for="job_title" class="form-label fw-bold">Vị trí tuyển dụng</label>
+                <input type="text" class="form-control" id="job_title" name="job_title" required
+                       value="{{ (fd.job_title if fd else None) or (job.job_title if job else '') }}">
+            </div>
+            <div class="mb-3">
+                <label for="job_description" class="form-label fw-bold">Mô tả công việc</label>
+                <textarea class="form-control" id="job_description" name="job_description" rows="4" required>{{ (fd.job_description if fd else None) or (job.job_description if job else '') }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="requirements" class="form-label fw-bold">Yêu cầu ứng viên</label>
+                <textarea class="form-control" id="requirements" name="requirements" rows="3">{{ (fd.requirements if fd else None) or (job.requirements if job else '') }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="benefits" class="form-label fw-bold">Quyền lợi</label>
+                <textarea class="form-control" id="benefits" name="benefits" rows="2">{{ (fd.benefits if fd else None) or (job.benefits if job else '') }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="job_type_id" class="form-label fw-bold">Cấp bậc</label>
+                <select id="job_type_id" name="job_type_id" class="form-control" required>
+                    <option value="">Chọn cấp bậc</option>
+                    {% for jt in job_types %}
+                        <option value="{{ jt.id }}"
+                            {% if (fd and fd.job_type_id == jt.id|string) or (not fd and job and jt.id == job.job_type_id) %}
+                                selected
+                            {% endif %}>
+                            {{ jt.type }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Mức lương</label>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="salary_negotiable" name="salary_negotiable" value="1"
+                        onchange="toggleSalaryFields()"
+                        {% if (fd and fd.get('salary_negotiable')) or (not fd and job and job.salary_range == 'Thỏa thuận') %}checked{% endif %}>
+                    <label class="form-check-label" for="salary_negotiable">Lương thỏa thuận</label>
+                </div>
+                <div id="salary_fields" class="row mt-2"
+                    {% if (fd and fd.get('salary_negotiable')) or (not fd and job and job.salary_range == 'Thỏa thuận') %}style="display:none"{% endif %}>
+                    <div class="col">
+                        <input type="number" class="form-control" id="salary_from" name="salary_from" placeholder="Từ (VNĐ)"
+                               value="{% if fd and fd.salary_from %}{{ fd.salary_from }}{% elif job and job.salary_range and job.salary_range != 'Thỏa thuận' and '-' in job.salary_range %}{{ job.salary_range.split('-')[0].strip().replace('Trên ', '') }}{% elif job and job.salary_range and job.salary_range.startswith('Trên') %}{{ job.salary_range.replace('Trên', '').strip() }}{% else %}{% endif %}">
+                    </div>
+                    <div class="col">
+                        <input type="number" class="form-control" id="salary_to" name="salary_to" placeholder="Đến (VNĐ)"
+                               value="{% if fd and fd.salary_to %}{{ fd.salary_to }}{% elif job and job.salary_range and '-' in job.salary_range %}{{ job.salary_range.split('-')[1].strip() }}{% else %}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <div class="col-md-4">
+                    <label for="province" class="form-label fw-bold">Tỉnh/Thành phố</label>
+                    <select class="form-control select2" id="province" name="province_code" required>
+                        <option value="">Chọn tỉnh/thành</option>
+                        {% for p in provinces %}
+                            <option value="{{ p.code }}"
+                              {% if (fd and fd.province_code == p.code|string) or (not fd and p.code == company_province) %}
+                                selected
+                              {% endif %}>
+                              {{ p.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="district" class="form-label fw-bold">Quận/Huyện</label>
+                    <select class="form-control select2" id="district" name="district_code" required>
+                        <option value="">Chọn quận/huyện</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="ward" class="form-label fw-bold">Phường/Xã</label>
+                    <select class="form-control select2" id="ward" name="ward_code" required>
+                        <option value="">Chọn phường/xã</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="expiration_date" class="form-label fw-bold">Ngày hết hạn</label>
+                <input type="date" class="form-control" id="expiration_date" name="expiration_date" required
+                    value="{% if fd and fd.expiration_date %}{{ fd.expiration_date }}{% elif job and job.expiration_date %}{{ job.expiration_date.strftime('%Y-%m-%d') }}{% else %}{% endif %}">
+            </div>
+            <button type="submit" class="btn btn-success px-4 py-2">
+                {% if edit_mode %}Cập nhật tin{% else %}Đăng tin{% endif %}
+            </button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        const COMPANY_PROVINCE = "{{ company_province }}";
+        const COMPANY_DISTRICT = "{{ company_district }}";
+        const COMPANY_WARD = "{{ company_ward }}";
+        // Ẩn/hiện trường lương khi chỉnh sửa
+        function toggleSalaryFields() {
+            if ($('#salary_negotiable').is(':checked')) {
+                $('#salary_fields').hide();
+            } else {
+                $('#salary_fields').show();
+            }
+        }
+        $(document).ready(function() {
+            $('.select2').select2();
+            toggleSalaryFields();
+            $('#salary_negotiable').change(toggleSalaryFields);
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/form_location.js') }}"></script>
+{% endblock %}

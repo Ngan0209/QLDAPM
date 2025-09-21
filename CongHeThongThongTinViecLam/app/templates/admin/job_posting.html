@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<h2>{{ title }}</h2>
+<form method="POST" enctype="multipart/form-data">
+  {% for hidden in form.hidden_fields %}
+    {{ hidden }}
+  {% endfor %}
+  {% for field in form %}
+    <div class="mb-3">
+      {{ field.label(class_="form-label") }}
+
+      {% if field.type == 'QuerySelectField' %}
+        <select name="{{ field.name }}" class="form-control">
+          {% for choice in field.iter_choices() %}
+            {% set val = choice[0] %}
+            {% set label = choice[1] %}
+            {% set selected = choice[2] %}
+            <option value="{{ val }}" {% if selected %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      {% else %}
+        {{ field(class_="form-control") }}
+      {% endif %}
+
+      {% if field.errors %}
+        <div class="text-danger mt-1">
+          {% for error in field.errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-success">Save</button>
+  <a href="{{ url_for('.index_view') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+const SELECTED_PROVINCE = "{{ form.province_code.data or '' }}";
+const SELECTED_DISTRICT = "{{ form.district_code.data or '' }}";
+const SELECTED_WARD = "{{ form.ward_code.data or '' }}";
+
+function loadDistricts(provinceCode, selectedDistrict, callback) {
+    $('#district_code').empty().append('<option value="">Chọn quận/huyện</option>');
+    $('#ward_code').empty().append('<option value="">Chọn phường/xã</option>');
+    if (provinceCode) {
+        $.get('/api/districts', {province_code: provinceCode}, function(data) {
+            $.each(data, function(i, d) {
+                $('#district_code').append($('<option>', {value: d.code, text: d.name}));
+            });
+            if (selectedDistrict) {
+                $('#district_code').val(selectedDistrict).trigger('change');
+            }
+            if (callback) callback();
+        });
+    }
+}
+
+function loadWards(districtCode, selectedWard) {
+    $('#ward_code').empty().append('<option value="">Chọn phường/xã</option>');
+    if (districtCode) {
+        $.get('/api/wards', {district_code: districtCode}, function(data) {
+            $.each(data, function(i, w) {
+                $('#ward_code').append($('<option>', {value: w.code, text: w.name}));
+            });
+            if (selectedWard) {
+                $('#ward_code').val(selectedWard);
+            }
+        });
+    }
+}
+
+$(document).ready(function() {
+    // Dependent: Tỉnh - Huyện - Xã
+    $('#province_code').on('change', function() {
+        loadDistricts($(this).val(), null);
+    });
+
+    $('#district_code').on('change', function() {
+        loadWards($(this).val(), null);
+    });
+
+    if (SELECTED_PROVINCE) {
+        loadDistricts(SELECTED_PROVINCE, SELECTED_DISTRICT, function() {
+            if (SELECTED_DISTRICT) {
+                loadWards(SELECTED_DISTRICT, SELECTED_WARD);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
