@@ -1,0 +1,839 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa CV{% endblock %}
+
+{% block styles %}
+<style>
+  .a4 {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 20px auto;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cv-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+  }
+
+  .contact-info div {
+    margin-bottom: 3px;
+  }
+
+  .section-block {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  .subitem {
+    page-break-inside: avoid;
+    margin-bottom: 15px;
+  }
+
+  /* Edit mode styles */
+  .edit-mode-active {
+    outline: 2px dashed #0d6efd;
+    outline-offset: 2px;
+    border-radius: 3px;
+    padding: 2px;
+    transition: all 0.3s ease;
+  }
+
+  .edit-mode-active:focus {
+    outline: 2px solid #0d6efd;
+    background-color: #f8f9fa;
+  }
+
+  .format-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .edit-mode-active:hover .format-btn {
+    opacity: 1;
+  }
+
+  .section-actions {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .section-actions .btn {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+
+  /* Avatar styles */
+  .avatar {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 6px;
+    background: #dfe6ea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 36px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .avatar .edit-photo {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    display: none;
+    cursor: pointer;
+  }
+
+  .avatar:hover .edit-photo {
+    display: block;
+  }
+
+  /* Subitem styles */
+  .subitem {
+    border-left: 3px solid;
+    margin-left: 10px;
+    padding-left: 15px;
+    position: relative;
+  }
+
+  .subitem-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+  }
+
+  .subitem-actions .btn {
+    font-size: 11px;
+    padding: 1px 4px;
+  }
+
+  @media print {
+    body, html {
+      width: 210mm;
+      height: 297mm;
+      background: white;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: none !important;
+    }
+    
+    .a4 {
+      margin: 0;
+      padding: 15mm;
+      box-shadow: none;
+      min-height: 277mm;
+      page-break-after: always;
+    }
+    
+    .btn, .mb-4, .py-4, .section-actions, .subitem-actions, .format-btn {
+      display: none !important;
+    }
+    
+    .cv-header {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+    }
+  }
+
+  /* Responsive cho mobile */
+  @media (max-width: 768px) {
+    .a4 {
+      width: 100%;
+      padding: 15px;
+      margin: 10px auto;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    
+    .cv-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .avatar {
+      margin: 0 auto 15px auto;
+    }
+  }
+
+  /* Control panel styles */
+  .control-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .control-row {
+    margin-bottom: 15px;
+  }
+
+  .control-row label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Chỉnh sửa CV</h2>
+    <div>
+      <button id="toggleEditBtn" class="btn btn-outline-primary me-2">Bật chế độ chỉnh sửa</button>
+      <button onclick="window.print()" class="btn btn-primary me-2">In / Xuất PDF</button>
+      <button id="saveCvBtn" class="btn btn-success">Lưu thay đổi</button>
+    </div>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <h4>Thiết kế & Cấu hình</h4>
+    <div class="row">
+      <div class="col-md-3">
+        <div class="control-row">
+          <label>Font chữ</label>
+          <select id="fontFamily" class="form-select form-select-sm">
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Roboto, sans-serif">Roboto</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="control-row">
+          <label>Cỡ chữ: <span id="fontSizeValue">14</span>px</label>
+          <input id="fontSize" type="range" min="12" max="18" value="14" class="form-range">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="control-row">
+          <label>Khoảng cách dòng: <span id="lineHeightValue">1.45</span></label>
+          <input id="lineHeight" type="range" min="1" max="2" step="0.1" value="1.45" class="form-range">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="control-row">
+          <label>Màu chủ đề</label>
+          <input id="themeColor" type="color" value="#1a73e8" class="form-control form-control-color">
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-3">
+      <div class="col-md-6">
+        <div class="control-row">
+          <label>Upload ảnh đại diện</label>
+          <input id="avatarInput" type="file" accept="image/*" class="form-control form-control-sm">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="control-row">
+          <label>Thao tác</label>
+          <div>
+            <button id="addSectionBtn" class="btn btn-sm btn-outline-primary me-2">Thêm mục</button>
+            <button id="manageSectionsBtn" class="btn btn-sm btn-outline-secondary">Quản lý mục</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CV Preview/Edit Area -->
+  <div class="a4" id="preview"
+       style="font-size: {{ cv.cv_data.design.fontSize }}px;
+              line-height: {{ cv.cv_data.design.lineHeight }};
+              font-family: {{ cv.cv_data.design.fontFamily }};
+              color: #222;">
+
+    <!-- Header -->
+    <div class="cv-header d-flex mb-4">
+      <div class="avatar me-3" id="avatarBox">
+        {% if cv.avatar %}
+          <img id="avatarImg" src="{{ cv.avatar }}" alt="Avatar">
+        {% else %}
+          <div id="avatarPlaceholder" class="avatar-placeholder d-flex align-items-center justify-content-center">
+            {{ cv.cv_data.profile.name[0]|upper if cv.cv_data.profile.name else 'CV' }}
+          </div>
+        {% endif %}
+        <div class="edit-photo" onclick="document.getElementById('avatarInput').click()">Sửa ảnh</div>
+      </div>
+      
+      <div class="person-info flex-grow-1">
+        <h1 id="name" contenteditable="false" data-field="name">{{ cv.cv_data.profile.name }}</h1>
+        <div class="jobtitle fw-bold mb-2" id="jobtitle" contenteditable="false" data-field="jobtitle"
+             style="color:{{ cv.cv_data.design.themeColor }};">{{ cv.cv_data.profile.jobtitle }}</div>
+        
+        <div class="contact-info" style="font-size:13px;line-height:1.4;">
+          <div id="dob" contenteditable="false" data-field="dob">{{ cv.cv_data.profile.dob }}</div>
+          <div id="gender" contenteditable="false" data-field="gender">{{ cv.cv_data.profile.gender }}</div>
+          <div id="phone" contenteditable="false" data-field="phone">{{ cv.cv_data.profile.phone }}</div>
+          <div id="email" contenteditable="false" data-field="email">{{ cv.cv_data.profile.email }}</div>
+          <div id="website" contenteditable="false" data-field="website">{{ cv.cv_data.profile.website }}</div>
+          <div id="address" contenteditable="false" data-field="address">{{ cv.cv_data.profile.address }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sections với Subitems -->
+    <div id="sectionsContainer">
+      {% for section in cv.cv_data.sections if section.visible %}
+      <div class="section-block" data-section-id="{{ section.id }}"
+           style="border-top:2px solid {{ cv.cv_data.design.themeColor }}; padding-top:12px;">
+        
+        <!-- Section Actions -->
+        <div class="section-actions">
+          <button class="btn btn-sm btn-outline-secondary" onclick="moveSectionUp('{{ section.id }}')">Lên</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="moveSectionDown('{{ section.id }}')">Xuống</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="toggleSectionVisible('{{ section.id }}')">
+            {{ 'Ẩn' if section.visible else 'Hiện' }}
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="showSubItemForm('{{ section.id }}')">Thêm mục con</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteSection('{{ section.id }}')">Xóa</button>
+        </div>
+
+        <!-- Section Title -->
+        <h4 class="section-title" contenteditable="false" data-section="{{ section.id }}" data-field="title"
+            style="color:{{ section.titleColor }}; margin-bottom:15px; font-size:16px;">
+          {{ section.title }}
+        </h4>
+
+        <!-- Section Content (nếu có) -->
+        {% if section.content and section.content.strip() %}
+        <div class="section-content mb-3" contenteditable="false" data-section="{{ section.id }}" data-field="content"
+             style="color:{{ section.contentColor }};">
+          {{ section.content | safe }}
+        </div>
+        {% endif %}
+
+        <!-- Subitems (nếu có) -->
+        {% if section.subitems and section.subitems|length > 0 %}
+        <div class="subitems-container">
+          {% for subitem in section.subitems %}
+          <div class="subitem" data-subitem-id="{{ subitem.id }}"
+               style="border-left-color: {{ cv.cv_data.design.themeColor }}40;">
+            
+            <!-- Subitem Actions -->
+            <div class="subitem-actions">
+              <button class="btn btn-sm btn-outline-secondary" onclick="moveSubItemUp('{{ section.id }}', {{ loop.index0 }})">Lên</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="moveSubItemDown('{{ section.id }}', {{ loop.index0 }})">Xuống</button>
+              <button class="btn btn-sm btn-outline-primary" onclick="editSubItem('{{ section.id }}', {{ loop.index0 }})">Sửa</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSubItem('{{ section.id }}', {{ loop.index0 }})">Xóa</button>
+            </div>
+            
+            <!-- Subitem Title -->
+            <div class="subitem-title fw-bold mb-1" contenteditable="false"
+                 data-section="{{ section.id }}" data-subitem="{{ subitem.id }}" data-field="title">
+              {{ subitem.title }}
+            </div>
+            
+            <!-- Subitem Meta (nếu có) -->
+            {% if subitem.meta and subitem.meta.strip() %}
+            <div class="subitem-meta text-muted small mb-1" contenteditable="false"
+                 data-section="{{ section.id }}" data-subitem="{{ subitem.id }}" data-field="meta">
+              {{ subitem.meta }}
+            </div>
+            {% endif %}
+            
+            <!-- Subitem Description (nếu có) -->
+            {% if subitem.desc and subitem.desc.strip() %}
+            <div class="subitem-desc" contenteditable="false"
+                 data-section="{{ section.id }}" data-subitem="{{ subitem.id }}" data-field="desc"
+                 style="color:#444; line-height:1.5;">
+              {{ subitem.desc | replace('\n', '<br>') | safe }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Placeholder nếu không có nội dung -->
+        {% if not section.content and not section.subitems %}
+        <div class="text-muted fst-italic" contenteditable="true" data-section="{{ section.id }}" data-field="content"
+             style="color:#999; min-height: 50px;">
+          Nhấp để thêm nội dung...
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal Form cho mục con -->
+<div id="subItemModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subItemModalTitle">Thêm mục con</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="subItemForm">
+          <div class="mb-3">
+            <label for="subTitle" class="form-label">Tiêu đề mục con *</label>
+            <input type="text" class="form-control" id="subTitle" placeholder="Ví dụ: Nhân viên kinh doanh" required>
+          </div>
+          <div class="mb-3">
+            <label for="subMeta" class="form-label">Thông tin bổ sung</label>
+            <input type="text" class="form-control" id="subMeta" placeholder="Ví dụ: Công ty ABC - 01/2020 đến 12/2023">
+          </div>
+          <div class="mb-3">
+            <label for="subDesc" class="form-label">Mô tả chi tiết</label>
+            <textarea class="form-control" id="subDesc" rows="4" placeholder="Mô tả công việc, thành tích, kỹ năng..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-primary" id="saveSubItemBtn">Lưu mục con</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Quản lý Sections -->
+<div id="manageSectionsModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Quản lý các mục</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label>Thêm mục mới:</label>
+          <select id="newSectionType" class="form-select">
+            <option value="career">Mục tiêu nghề nghiệp</option>
+            <option value="education">Học vấn</option>
+            <option value="experience">Kinh nghiệm</option>
+            <option value="skills">Kỹ năng</option>
+            <option value="certificates">Chứng chỉ</option>
+            <option value="awards">Giải thưởng</option>
+            <option value="references">Người giới thiệu</option>
+            <option value="custom">Mục tùy chỉnh</option>
+          </select>
+        </div>
+        <button id="addNewSectionBtn" class="btn btn-primary w-100">Thêm mục</button>
+        
+        <hr>
+        
+        <div id="sectionsList">
+          <!-- Danh sách sections sẽ được render bằng JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Khởi tạo dữ liệu từ server
+let cvData = {{ cv.cv_data | tojson }};
+let editMode = false;
+let currentEditingSection = null;
+
+// Các template cho section mới
+const sectionTemplates = {
+  career: {
+    key: "career_objective",
+    title: "Mục tiêu nghề nghiệp",
+    content: "<div>Nhập mục tiêu nghề nghiệp của bạn...</div>"
+  },
+  education: {
+    key: "education",
+    title: "Học vấn",
+    content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên trường - Ngành học<br/>Mô tả học vấn</div>"
+  },
+  experience: {
+    key: "experience",
+    title: "Kinh nghiệm làm việc",
+    content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên công ty<br/>Vị trí công việc<br/>Mô tả</div>"
+  },
+  skills: {
+    key: "skills",
+    title: "Kỹ năng",
+    content: "<div>- Kỹ năng 1<br/>- Kỹ năng 2</div>"
+  },
+  certificates: {
+    key: "certificates",
+    title: "Chứng chỉ",
+    content: "<div>Tên chứng chỉ - Tổ chức cấp - Năm</div>"
+  },
+  awards: {
+    key: "awards",
+    title: "Giải thưởng",
+    content: "<div>Tên giải thưởng - Năm</div>"
+  },
+  references: {
+    key: "references",
+    title: "Người giới thiệu",
+    content: "<div>Tên - Chức vụ - Công ty<br/>Thông tin liên hệ</div>"
+  },
+  custom: {
+    key: "custom",
+    title: "Mục tùy chỉnh",
+    content: "<div>Nội dung...</div>"
+  }
+};
+
+// Helper functions
+function byId(id) {
+  return document.getElementById(id);
+}
+
+function generateId() {
+  return 's' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+// Toggle edit mode
+byId('toggleEditBtn').addEventListener('click', function() {
+  editMode = !editMode;
+  this.textContent = editMode ? 'Tắt chế độ chỉnh sửa' : 'Bật chế độ chỉnh sửa';
+  
+  // Toggle contenteditable cho tất cả các phần tử có thể chỉnh sửa
+  document.querySelectorAll('[contenteditable]').forEach(el => {
+    el.contentEditable = editMode;
+    el.classList.toggle('edit-mode-active', editMode);
+  });
+  
+  // Toggle hiển thị các nút action
+  document.querySelectorAll('.section-actions, .subitem-actions').forEach(el => {
+    el.style.display = editMode ? 'flex' : 'none';
+  });
+});
+
+// Xử lý upload avatar
+byId('avatarInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      byId('avatarImg').src = event.target.result;
+      byId('avatarImg').style.display = 'block';
+      byId('avatarPlaceholder').style.display = 'none';
+      cvData.profile.avatarDataUrl = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Xử lý thay đổi thiết kế
+byId('fontFamily').addEventListener('change', function() {
+  cvData.design.fontFamily = this.value;
+  updatePreview();
+});
+
+byId('fontSize').addEventListener('input', function() {
+  cvData.design.fontSize = parseInt(this.value);
+  byId('fontSizeValue').textContent = this.value;
+  updatePreview();
+});
+
+byId('lineHeight').addEventListener('input', function() {
+  cvData.design.lineHeight = parseFloat(this.value);
+  byId('lineHeightValue').textContent = this.value;
+  updatePreview();
+});
+
+byId('themeColor').addEventListener('input', function() {
+  cvData.design.themeColor = this.value;
+  updatePreview();
+});
+
+// Cập nhật preview
+function updatePreview() {
+  const preview = byId('preview');
+  preview.style.fontFamily = cvData.design.fontFamily;
+  preview.style.fontSize = cvData.design.fontSize + 'px';
+  preview.style.lineHeight = cvData.design.lineHeight;
+  
+  // Cập nhật màu theme
+  document.querySelectorAll('.section-block').forEach(section => {
+    section.style.borderTopColor = cvData.design.themeColor;
+  });
+}
+
+// Quản lý sections
+byId('manageSectionsBtn').addEventListener('click', function() {
+  renderSectionsList();
+  new bootstrap.Modal(byId('manageSectionsModal')).show();
+});
+
+byId('addNewSectionBtn').addEventListener('click', function() {
+  const type = byId('newSectionType').value;
+  const template = sectionTemplates[type];
+  
+  if (template) {
+    const newSection = {
+      id: generateId(),
+      key: template.key,
+      title: template.title,
+      content: template.content,
+      titleColor: "#111",
+      contentColor: "#444",
+      visible: true
+    };
+    
+    cvData.sections.push(newSection);
+    renderCV();
+    renderSectionsList();
+  }
+});
+
+function renderSectionsList() {
+  const container = byId('sectionsList');
+  container.innerHTML = '';
+  
+  cvData.sections.forEach((section, index) => {
+    const div = document.createElement('div');
+    div.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
+    div.innerHTML = `
+      <div>
+        <strong>${section.title}</strong>
+        <small class="text-muted d-block">${section.visible ? 'Đang hiển thị' : 'Đã ẩn'}</small>
+      </div>
+      <div>
+        <button class="btn btn-sm btn-outline-secondary" onclick="moveSection(${index}, -1)">Lên</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="moveSection(${index}, 1)">Xuống</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteSectionFromList(${index})">Xóa</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function moveSection(index, direction) {
+  if ((direction === -1 && index > 0) || (direction === 1 && index < cvData.sections.length - 1)) {
+    const temp = cvData.sections[index + direction];
+    cvData.sections[index + direction] = cvData.sections[index];
+    cvData.sections[index] = temp;
+    renderCV();
+    renderSectionsList();
+  }
+}
+
+function deleteSectionFromList(index) {
+  if (confirm('Bạn có chắc muốn xóa mục này?')) {
+    cvData.sections.splice(index, 1);
+    renderCV();
+    renderSectionsList();
+  }
+}
+
+// Render CV
+function renderCV() {
+  // Cập nhật thông tin profile
+  document.querySelectorAll('[data-field]').forEach(el => {
+    const field = el.getAttribute('data-field');
+    if (cvData.profile[field]) {
+      el.textContent = cvData.profile[field];
+    }
+  });
+  
+  // Render sections sẽ được xử lý bằng JavaScript nâng cao
+  updatePreview();
+}
+
+// Khởi tạo
+document.addEventListener('DOMContentLoaded', function() {
+  // Khởi tạo giá trị từ dữ liệu CV
+  if (cvData.design) {
+    byId('fontFamily').value = cvData.design.fontFamily || 'Arial, Helvetica, sans-serif';
+    byId('fontSize').value = cvData.design.fontSize || 14;
+    byId('lineHeight').value = cvData.design.lineHeight || 1.45;
+    byId('themeColor').value = cvData.design.themeColor || '#1a73e8';
+    
+    byId('fontSizeValue').textContent = cvData.design.fontSize || 14;
+    byId('lineHeightValue').textContent = cvData.design.lineHeight || 1.45;
+  }
+  
+  renderCV();
+});
+
+// Lưu CV - Xử lý lỗi JSON
+byId('saveCvBtn').addEventListener('click', async function() {
+  try {
+    const button = this;
+    button.disabled = true;
+    button.textContent = 'Đang lưu...';
+    
+    // Chuẩn bị dữ liệu
+    const requestData = {
+      cv_data: cvData
+    };
+
+    const response = await fetch('/cv/update-cv/{{ cv.id }}', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData)
+    });
+    
+    // Kiểm tra content type
+    const contentType = response.headers.get('content-type');
+    let result;
+    
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      // Nếu không phải JSON, đọc text để debug
+      const text = await response.text();
+      console.error('Server trả về không phải JSON:', text);
+      throw new Error('Server trả về định dạng không hợp lệ');
+    }
+    
+    if (response.ok) {
+      alert('Đã lưu CV thành công!');
+    } else {
+      alert('Lỗi: ' + (result.error || 'Không xác định'));
+    }
+  } catch (error) {
+    console.error('Lỗi chi tiết:', error);
+    alert('Lỗi kết nối: ' + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Lưu thay đổi';
+  }
+});
+
+// Các hàm quản lý sections và subitems
+function moveSectionUp(sectionId) {
+  const index = cvData.sections.findIndex(s => s.id === sectionId);
+  if (index > 0) {
+    const temp = cvData.sections[index - 1];
+    cvData.sections[index - 1] = cvData.sections[index];
+    cvData.sections[index] = temp;
+    renderCV();
+  }
+}
+
+function moveSectionDown(sectionId) {
+  const index = cvData.sections.findIndex(s => s.id === sectionId);
+  if (index < cvData.sections.length - 1) {
+    const temp = cvData.sections[index + 1];
+    cvData.sections[index + 1] = cvData.sections[index];
+    cvData.sections[index] = temp;
+    renderCV();
+  }
+}
+
+function toggleSectionVisible(sectionId) {
+  const section = cvData.sections.find(s => s.id === sectionId);
+  if (section) {
+    section.visible = !section.visible;
+    renderCV();
+  }
+}
+
+function deleteSection(sectionId) {
+  if (confirm('Bạn có chắc muốn xóa mục này?')) {
+    cvData.sections = cvData.sections.filter(s => s.id !== sectionId);
+    renderCV();
+  }
+}
+
+function showSubItemForm(sectionId) {
+  document.getElementById('subItemModalTitle').textContent = 'Thêm mục con';
+  document.getElementById('subTitle').value = '';
+  document.getElementById('subMeta').value = '';
+  document.getElementById('subDesc').value = '';
+  
+  currentEditingSection = sectionId;
+  new bootstrap.Modal(byId('subItemModal')).show();
+}
+
+// Xử lý lưu mục con
+document.getElementById('saveSubItemBtn').addEventListener('click', function() {
+  const title = document.getElementById('subTitle').value.trim();
+  const meta = document.getElementById('subMeta').value.trim();
+  const desc = document.getElementById('subDesc').value.trim();
+
+  if (!title) {
+    alert('Vui lòng nhập tiêu đề');
+    return;
+  }
+
+  const section = cvData.sections.find(s => s.id === currentEditingSection);
+  if (section) {
+    if (!section.subitems) section.subitems = [];
+    
+    section.subitems.push({
+      id: generateId(),
+      title: title,
+      meta: meta,
+      desc: desc
+    });
+    
+    renderCV();
+    bootstrap.Modal.getInstance(byId('subItemModal')).hide();
+  }
+});
+
+// Xử lý sự kiện input cho các trường contenteditable
+document.addEventListener('input', function(e) {
+  if (e.target.hasAttribute('contenteditable') && editMode) {
+    const field = e.target.getAttribute('data-field');
+    const sectionId = e.target.getAttribute('data-section');
+    const subitemId = e.target.getAttribute('data-subitem');
+    
+    if (field && !sectionId && !subitemId) {
+      // Cập nhật profile
+      cvData.profile[field] = e.target.textContent;
+    } else if (field && sectionId && !subitemId) {
+      // Cập nhật section
+      const section = cvData.sections.find(s => s.id === sectionId);
+      if (section) {
+        section[field] = e.target.innerHTML;
+      }
+    } else if (field && sectionId && subitemId) {
+      // Cập nhật subitem
+      const section = cvData.sections.find(s => s.id === sectionId);
+      if (section && section.subitems) {
+        const subitem = section.subitems.find(item => item.id === subitemId);
+        if (subitem) {
+          subitem[field] = e.target.innerHTML;
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

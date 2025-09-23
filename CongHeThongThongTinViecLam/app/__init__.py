@@ -35,18 +35,18 @@ def create_app():
     migrate.init_app(app, db)
     init_admin(app)
 
-    # cấu hình login
+
     login.login_view = "auth.login"
 
     @login.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # đăng ký blueprint
+
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(cv_bp, url_prefix="/cv")
-    app.register_blueprint(admin_template_bp, url_prefix="/admin/template")  # Đăng ký admin_template_bp
+    app.register_blueprint(admin_template_bp, url_prefix="/admin/template")  
     app.register_blueprint(job_posting_bp, url_prefix="/job")
     app.register_blueprint(company_bp, url_prefix="/company")
 

@@ -73,13 +73,13 @@ class AdminModelViewBase(ModelView):
             return False
 
 class UserAdmin(AdminModelViewBase):
-    # Ẩn mật khẩu + các quan hệ khác
+    
     form_excluded_columns = [
         'password', 'comments', 'reports', 'job_postings', 'job_applications'
     ]
 
-    column_exclude_list = ['password']  # Ẩn mật khẩu khỏi list view
-    column_details_exclude_list = ['password']  # Ẩn mật khẩu trong detail view
+    column_exclude_list = ['password']  
+    column_details_exclude_list = ['password']  
 
     form_overrides = {
         'user_type': SelectField,
@@ -92,18 +92,18 @@ class UserAdmin(AdminModelViewBase):
 
     def scaffold_form(self):
         form_class = super().scaffold_form()
-        # Tạo trường password chỉ để nhập mới/chỉnh sửa
+        
         form_class.password = PasswordField('Password')
         return form_class
 
     def on_model_change(self, form, model, is_created):
-        # Nếu nhập mật khẩu mới thì hash lại
+        
         if form.password.data:
             model.password = generate_password_hash(form.password.data)
         super().on_model_change(form, model, is_created)
 
     def on_form_prefill(self, form, id):
-        # Khi edit user, để trống password
+        
         form.password.data = None
 
 # ------------------- JobTypeAdmin -------------------
@@ -144,10 +144,10 @@ class CompanyAdmin(AdminModelViewBase):
 
     def create_form(self, obj=None):
         form = super().create_form(obj)
-        # Province
+        
         form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
 
-        # District
+
         if form.province_code.data:
             form.district_code.choices = [(d.code, d.full_name) for d in
                                           District.query.filter_by(province_code=form.province_code.data).order_by(
@@ -155,7 +155,7 @@ class CompanyAdmin(AdminModelViewBase):
         else:
             form.district_code.choices = []
 
-        # Ward
+
         if form.district_code.data:
             form.ward_code.choices = [(w.code, w.full_name) for w in
                                       Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)]
@@ -174,10 +174,10 @@ class CompanyAdmin(AdminModelViewBase):
 
     def edit_form(self, obj=None):
         form = super().edit_form(obj)
-        # Province
+        
         form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
 
-        # District
+
         if form.province_code.data:
             form.district_code.choices = [(d.code, d.full_name) for d in
                                           District.query.filter_by(province_code=form.province_code.data).order_by(
@@ -185,7 +185,7 @@ class CompanyAdmin(AdminModelViewBase):
         else:
             form.district_code.choices = []
 
-        # Ward
+
         if form.district_code.data:
             form.ward_code.choices = [(w.code, w.full_name) for w in
                                       Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)]
@@ -203,9 +203,9 @@ class CompanyAdmin(AdminModelViewBase):
         return form
 
     def _populate_choices(self, form):
-        # Province
+        
         form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
-        # District
+
         if form.province_code.data:
             form.district_code.choices = [
                 (d.code, d.full_name)
@@ -213,7 +213,7 @@ class CompanyAdmin(AdminModelViewBase):
             ]
         else:
             form.district_code.choices = []
-        # Ward
+            
         if form.district_code.data:
             form.ward_code.choices = [
                 (w.code, w.full_name)
@@ -273,7 +273,7 @@ class JobPostingAdmin(AdminModelViewBase):
         else:
             form.district_code.choices = []
 
-        # Ward
+
         if form.district_code.data:
             form.ward_code.choices = [(w.code, w.full_name) for w in
                                       Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)]
@@ -284,10 +284,10 @@ class JobPostingAdmin(AdminModelViewBase):
 
     def edit_form(self, obj=None):
         form = super().edit_form(obj)
-        # Province
+        
         form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
 
-        # District
+
         if form.province_code.data:
             form.district_code.choices = [(d.code, d.full_name) for d in
                                           District.query.filter_by(province_code=form.province_code.data).order_by(
@@ -295,7 +295,7 @@ class JobPostingAdmin(AdminModelViewBase):
         else:
             form.district_code.choices = []
 
-        # Ward
+
         if form.district_code.data:
             form.ward_code.choices = [(w.code, w.full_name) for w in
                                       Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)]
@@ -361,14 +361,14 @@ class TemplatesAdmin(ModelView):
         if template:
             print(f"Loading template {id}: {template.name}")
             
-            # Điền các trường cơ bản
+            
             if hasattr(form, 'name'):
                 form.name.data = template.name or ''
             
             if hasattr(form, 'background'):
                 form.background.data = template.background or ''
             
-            # Xử lý các trường JSON - đảm bảo format đúng
+            
             json_fields = ['layout_json', 'widget_config', 'color_scheme']
             
             for field_name in json_fields:
@@ -377,23 +377,23 @@ class TemplatesAdmin(ModelView):
                     
                     if field_value and field_value.strip() and field_value not in ['[]', '{}']:
                         try:
-                            # Parse và format lại JSON
+                            
                             if isinstance(field_value, str):
                                 parsed_data = json.loads(field_value)
                             else:
                                 parsed_data = field_value
                             
-                            # Format với indent để dễ đọc
+                            
                             formatted_data = json.dumps(parsed_data, indent=2, ensure_ascii=False)
                             getattr(form, field_name).data = formatted_data
                             print(f"Formatted {field_name}: {formatted_data[:100]}...")
                             
                         except (json.JSONDecodeError, TypeError) as e:
                             print(f"Error parsing {field_name}: {e}")
-                            # Giữ nguyên giá trị gốc nếu không parse được
+                            
                             getattr(form, field_name).data = field_value
                     else:
-                        # Set giá trị mặc định cho trường rỗng
+                        
                         if field_name == 'layout_json':
                             getattr(form, field_name).data = '[]'
                         elif field_name == 'color_scheme':
@@ -407,7 +407,7 @@ class TemplatesAdmin(ModelView):
                                 "border": "#e5e7eb"
                             }
                             getattr(form, field_name).data = json.dumps(default_colors, indent=2)
-                        else:  # widget_config
+                        else:  
                             getattr(form, field_name).data = '{}'
     
     def on_model_change(self, form, model, is_created):
@@ -429,15 +429,15 @@ class TemplatesAdmin(ModelView):
                 field_data = field_obj.data.strip()
                 if field_data:
                     try:
-                        # Validate JSON
+                        
                         parsed_data = json.loads(field_data)
-                        # Store as string
+                        
                         setattr(model, field_name, json.dumps(parsed_data, ensure_ascii=False))
                         print(f"Saved {field_name}: {getattr(model, field_name)}")
                     except json.JSONDecodeError as e:
                         raise ValueError(f"{field_name.replace('_', ' ').title()} must be valid JSON: {str(e)}")
                 else:
-                    # Set default for empty fields
+                    
                     if field_name == 'layout_json':
                         setattr(model, field_name, '[]')
                     elif field_name == 'color_scheme':
@@ -451,10 +451,10 @@ class TemplatesAdmin(ModelView):
                             "border": "#e5e7eb"
                         }
                         setattr(model, field_name, json.dumps(default_colors))
-                    else:  # widget_config
+                    else: 
                         setattr(model, field_name, '{}')
             else:
-                # Handle None/empty cases
+                
                 if field_name == 'layout_json':
                     setattr(model, field_name, '[]')
                 elif field_name == 'color_scheme':
@@ -468,10 +468,10 @@ class TemplatesAdmin(ModelView):
                         "border": "#e5e7eb"
                     }
                     setattr(model, field_name, json.dumps(default_colors))
-                else:  # widget_config
+                else:  
                     setattr(model, field_name, '{}')
         
-        # Set default values nếu chưa có
+        
         if not model.font_family:
             model.font_family = 'Arial, sans-serif'
         
@@ -485,7 +485,7 @@ class TemplatesAdmin(ModelView):
         
         super().on_model_change(form, model, is_created)
     
-    # Static methods for formatters
+    
     @staticmethod
     def _background_preview(view, context, model, name):
         if model.background:
@@ -520,7 +520,7 @@ class TemplatesAdmin(ModelView):
             else:
                 data = field_value
             
-            # Hiển thị số lượng items hoặc keys
+            
             if isinstance(data, dict):
                 count = len(data.keys())
                 preview_text = f"{count} keys"
@@ -547,7 +547,7 @@ class TemplatesAdmin(ModelView):
         edit_url = get_url('.edit_view', id=model.id)
         delete_url = get_url('.delete_view', id=model.id)
         
-        # Safe check for preview URL
+        
         try:
             preview_url = url_for('cv.preview_template', template_id=model.id)
         except:
@@ -594,7 +594,7 @@ class TemplatesAdmin(ModelView):
             model = self.model()
             form.populate_obj(model)
             
-            # Set default values cho template mới
+            
             if not model.layout_json or model.layout_json.strip() == '':
                 model.layout_json = '[]'
             if not model.widget_config or model.widget_config.strip() == '':
@@ -657,9 +657,6 @@ class TemplatesAdmin(ModelView):
             </div>
         ''')
     
-                #     <a class="btn btn-sm btn-outline-info" href="{preview_url}" target="_blank" title="Xem trước">
-                #     <i class="fas fa-eye"></i>
-                # </a>
 
 # ------------------- Init Admin -------------------
 def init_admin(app):

@@ -27,7 +27,7 @@ def register():
     phone = data.get("phone")
     dob = data.get("dob")
 
-    # Validate cơ bản
+
     if not username or not email or not password:
         return render_template("auth/login.html", error="Thiếu thông tin bắt buộc")
 
@@ -37,16 +37,16 @@ def register():
     if User.query.filter((User.username == username) | (User.email == email)).first():
         return render_template("auth/login.html", error="Username hoặc Email đã tồn tại")
 
-    # Hash password
+
     hashed_pw = generate_password_hash(password)
 
-    # Xử lý avatar nếu có
+
     avatar_url = None
     if "avatar" in request.files and request.files["avatar"].filename != "":
         avatar_file = request.files["avatar"]
         avatar_url = upload_avatar(avatar_file)
 
-    # Tạo user
+
     user = User(
         username=username,
         email=email,
@@ -62,7 +62,7 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    # Thành công
+
     return render_template("auth/login.html", message="Đăng ký thành công, hãy đăng nhập!")
 
 
@@ -111,7 +111,7 @@ def login():
     if user.user_type == UserRole.admin.value:
         return redirect(url_for("admin.index"))
 
-    # Redirect sang trang profile
+
     return redirect(url_for("auth.profile_screen"))
 
 

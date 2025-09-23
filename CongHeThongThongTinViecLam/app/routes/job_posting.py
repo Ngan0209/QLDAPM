@@ -3,8 +3,9 @@ from flask_login import current_user, login_required
 from sqlalchemy.orm import joinedload
 from app.badwords import check_content
 from app.extensions import db
-from app.models import JobPosting, Province, JobType
-import datetime
+from app.models import JobPosting, Province, JobType, JobApplication, Application, ApplicationStatus
+
+from datetime import datetime
 
 job_posting_bp = Blueprint("job", __name__, url_prefix="/job")
 
@@ -18,6 +19,18 @@ def detail(job_id):
         joinedload(JobPosting.ward)
     ).get_or_404(job_id)
     return render_template("job_detail.html", job=job)
+
+@job_posting_bp.route("/<int:job_id>/applications")
+@login_required
+def job_applications(job_id):
+    applications = (
+        Application.query
+        .filter_by(post_id=job_id)
+        .join(Application.job_application)
+        .join(JobApplication.user)
+        .all()
+    )
+    return render_template("company/job_applications.html", applications=applications)
 
 @job_posting_bp.route("/create", methods=["GET", "POST"])
 @login_required
@@ -190,6 +203,8 @@ def edit(job_id):
         form_data=None
     )
 
+
+
 @job_posting_bp.route("/delete/<int:job_id>", methods=["POST"])
 @login_required
 def delete(job_id):
@@ -211,3 +226,61 @@ def delete(job_id):
     db.session.commit()
     flash("Đã xóa bài đăng thành công!", "success")
     return redirect(url_for("employer.my_jobs"))
+
+
+@job_posting_bp.route("/<int:application_id>/review", methods=["PATCH"])
+@login_required
+def review(application_id):
+    app = Application.query.get_or_404(application_id)
+    new_status = request.json.get("status")  # nhận từ JSON body
+
+    if new_status and new_status in ApplicationStatus.__members__:
+        app.status = ApplicationStatus[new_status]
+        app.update_date = datetime.utcnow()
+        db.session.commit()
+        return {"message": "Cập nhật trạng thái thành công!", "status": app.status.value}, 200
+    return {"error": "Trạng thái không hợp lệ."}, 400
+
+
+
+@job_posting_bp.route("/<int:job_id>/apply", methods=["POST"])
+@login_required
+def apply(job_id):
+    user = current_user
+
+    if user.user_type != "candidate":
+        flash("Chỉ ứng viên mới có thể nộp đơn.", "danger")
+        return redirect(url_for("job.detail", job_id=job_id))
+
+    job_posting = JobPosting.query.get_or_404(job_id)
+
+    cv_id = request.form.get("cv_id")  # lấy từ form
+    if not cv_id:
+        flash("Vui lòng chọn CV để ứng tuyển.", "danger")
+        return redirect(url_for("cv.select_cv", job_id=job_id))
+
+    job_application = JobApplication.query.filter_by(
+        id=cv_id, user_id=user.id
+    ).first()
+
+    if not job_application:
+        flash("CV không hợp lệ.", "danger")
+        return redirect(url_for("cv.select_cv", job_id=job_id))
+
+    # Tạo Application gắn với job_posting
+    application = Application(
+        status= ApplicationStatus.PENDING,
+        update_date=datetime.utcnow().date(),
+        job_application_id=job_application.id,
+        post_id=job_posting.id
+    )
+    db.session.add(application)
+
+    try:
+        db.session.commit()
+        flash("Ứng tuyển thành công!", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Bạn đã nộp đơn vào tin này rồi.", "danger")
+
+    return redirect(url_for("job.detail", job_id=job_id))

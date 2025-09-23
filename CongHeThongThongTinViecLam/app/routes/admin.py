@@ -15,7 +15,7 @@ def api_get_template(template_id):
     try:
         template = Templates.query.get_or_404(template_id)
         
-        # Ensure JSON fields are properly formatted
+        
         layout_json = template.layout_json if template.layout_json else '[]'
         widget_config = template.widget_config if template.widget_config else '{}'
         color_scheme = template.color_scheme if template.color_scheme else '{}'
@@ -39,21 +39,21 @@ def api_get_template(template_id):
 def api_save_template():
     """API to save template data"""
     try:
-        # Check if request is JSON
+        
         if not request.is_json:
             return jsonify({'error': 'Content-Type must be application/json'}), 400
             
         data = request.get_json()
-        print('Received data:', data)  # Log dữ liệu nhận được
+        print('Received data:', data) 
 
         if not data:
             return jsonify({'error': 'No JSON data provided'}), 400
         
-        # Validate required fields
+        
         if not data.get('name'):
             return jsonify({'error': 'Template name is required'}), 400
         
-        # Create or update template
+        
         template_id = data.get('id')
         if template_id:
             template = Templates.query.get(template_id)
@@ -63,7 +63,7 @@ def api_save_template():
             template = Templates()
             db.session.add(template)
         
-        # Update template fields
+        
         template.name = data['name']
         template.background = data.get('background', '')
         template.layout_json = json.dumps(data.get('layout_json', []))
@@ -77,5 +77,5 @@ def api_save_template():
         return jsonify({'success': True, 'message': 'Template saved successfully', 'template_id': template.id})
     except Exception as e:
         db.session.rollback()
-        print('Error saving template:', str(e))  # Log lỗi
+        print('Error saving template:', str(e)) 
         return jsonify({'error': str(e)}), 500

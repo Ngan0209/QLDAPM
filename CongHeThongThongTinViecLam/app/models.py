@@ -17,6 +17,12 @@ class UserRole(RoleEnum):
     candidate = "candidate"
     approver = "approver"
 
+class ApplicationStatus(RoleEnum):
+    PENDING = "Chờ xác nhận"
+    REVIEWED = "Đang kiểm duyệt"
+    ACCEPTED = "Đã chấp nhận"
+    REJECTED = "Từ chối"
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "user"
@@ -216,7 +222,11 @@ class Application(db.Model):
     __tablename__ = "application"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    status = Column(String(50))
+    status = Column(
+        Enum(ApplicationStatus, name="application_status"),
+        default=ApplicationStatus.PENDING,
+        nullable=False
+    )
     update_date = Column(Date)
     job_application_id = Column(Integer, ForeignKey("job_application.id"))
     post_id = Column(Integer, ForeignKey("job_posting.id"))

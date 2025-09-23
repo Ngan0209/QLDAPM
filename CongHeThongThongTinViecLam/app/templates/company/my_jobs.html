@@ -9,7 +9,7 @@
       {% for job in jobs %}
         <div class="col-md-6 col-lg-4">
           <div class="card mb-3 border position-relative">
-            <a
+            <a href="{{ url_for('job.job_applications', job_id=job.id) }}"
                class="btn btn-outline-success btn-sm position-absolute"
                style="top: 12px; right: 12px; z-index: 2;">
               Xem đơn ứng tuyển
