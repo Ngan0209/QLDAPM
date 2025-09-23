@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xem trước Template - {{ template.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .a4-paper {
+            width: 595px;
+            height: 842px;
+            background: white;
+            margin: 0 auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+        .template-preview {
+            text-align: center;
+        }
+        .back-button {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-button">
+        <a href="javascript:history.back()">&larr; Quay lại</a>
+    </div>
+    
+    <div class="template-preview">
+        <h2>Xem trước: {{ template.name }}</h2>
+        <div class="a4-paper">
+            <h3>Đây là bản xem trước template</h3>
+            <p>Template ID: {{ template.id }}</p>
+            <p>Ngày tạo: {{ template.created_at }}</p>
+            <p>Layout JSON đã được lưu và có thể sử dụng để render CV</p>
+        </div>
+    </div>
+</body>
+</html>

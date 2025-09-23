@@ -112,13 +112,25 @@ class Report(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("job_posting.id"))
 
 
+
 class Templates(db.Model):
-    __tablename__ = "templates"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    __tablename__ = 'templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    background = db.Column(db.String(255), nullable=True)  # URL hoặc path ảnh background
-    layout_json = db.Column(db.JSON, nullable=True)       # layout Gridstack JSON
+    layout_json = db.Column(db.Text, nullable=False, default='[]')
+    background = db.Column(db.String(255))
+    thumbnail = db.Column(db.String(255))
+    is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    color_scheme = db.Column(db.Text, default='{}')  
+    widget_config = db.Column(db.Text, default='{}') 
+    font_family = db.Column(db.String(100), default='Arial, sans-serif')
+    font_size = db.Column(db.String(20), default='14px')
+
+    def __repr__(self):
+        return f'<Template {self.name}>'
 
 class JobApplication(db.Model):
     __tablename__ = "job_application"
@@ -126,9 +138,10 @@ class JobApplication(db.Model):
     cv_data = db.Column(JSON, nullable=False)
     design = db.Column(JSON, nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    avatar = db.Column(db.String(255), nullable = True)
+    avatar = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-
+    # Sửa relationship
     applications = db.relationship("Application", backref="job_application", lazy=True)
 
 

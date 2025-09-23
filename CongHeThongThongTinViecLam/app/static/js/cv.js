@@ -18,6 +18,49 @@ let profile = {
   avatarDataUrl: "" // base64 image
 };
 
+const sectionTemplates = {
+  career: {
+    key: "career_objective",
+    title: "Mục tiêu nghề nghiệp",
+    content: "<div>Nhập mục tiêu nghề nghiệp của bạn...</div>"
+  },
+  education: {
+    key: "education",
+    title: "Học vấn",
+    content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên trường - Ngành học<br/>Mô tả học vấn</div>"
+  },
+  experience: {
+    key: "experience",
+    title: "Kinh nghiệm làm việc",
+    content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên công ty<br/>Vị trí công việc<br/>Mô tả</div>"
+  },
+  skills: {
+    key: "skills",
+    title: "Kỹ năng",
+    content: "<div>- Kỹ năng 1<br/>- Kỹ năng 2</div>"
+  },
+  certificates: {
+    key: "certificates",
+    title: "Chứng chỉ",
+    content: "<div>Tên chứng chỉ - Tổ chức cấp - Năm</div>"
+  },
+  awards: {
+    key: "awards",
+    title: "Giải thưởng",
+    content: "<div>Tên giải thưởng - Năm</div>"
+  },
+  references: {
+    key: "references",
+    title: "Người giới thiệu",
+    content: "<div>Tên - Chức vụ - Công ty<br/>Thông tin liên hệ</div>"
+  },
+  custom: {
+    key: "custom",
+    title: "Mục tùy chỉnh",
+    content: "<div>Nội dung...</div>"
+  }
+};
+
 let sections = [
   { id: "sec1", key: "career_objective", title: "Mục tiêu nghề nghiệp", content: "<div>Nhập mục tiêu nghề nghiệp của bạn...</div>", titleColor: "#111", contentColor: "#444", visible: true },
   { id: "sec2", key: "education", title: "Học vấn", content: "<div><strong>Bắt đầu - Kết thúc</strong><br/>Tên trường - Ngành học<br/>Mô tả học vấn</div>", titleColor: "#111", contentColor: "#444", visible: true },
@@ -41,6 +84,7 @@ function generateId() {
 function selectSection(id) {
   selectedSectionId = id;
   renderSectionList();
+  renderPreview();
 }
 
 function addSubItem(sectionId, data = {}) {
@@ -49,12 +93,14 @@ function addSubItem(sectionId, data = {}) {
   if (!section.subitems) section.subitems = [];
 
   const newItem = {
+    id: generateId(),
     title: data.title || "Tiêu đề mục con",
-    meta: data.meta || "Thời gian / vị trí",
+    meta: data.meta || "Thông tin bổ sung",
     desc: data.desc || "Mô tả chi tiết..."
   };
   section.subitems.push(newItem);
   renderPreview();
+  updateOutput();
 }
 
 function deleteSubItem(sectionId, index) {
@@ -62,27 +108,98 @@ function deleteSubItem(sectionId, index) {
   if (!section || !section.subitems) return;
   section.subitems.splice(index, 1);
   renderPreview();
+  updateOutput();
+}
+
+function editSubItem(sectionId, index) {
+  const section = sections.find(x => x.id === sectionId);
+  if (!section || !section.subitems || !section.subitems[index]) return;
+  
+  const subItem = section.subitems[index];
+  showSubItemForm(sectionId, index);
 }
 
 function showSubItemForm(sectionId, subIndex = null) {
-  const form = byId('subItemFormContainer');
-  form.style.display = 'block';
-  form.dataset.sectionId = sectionId;
+  const modal = new bootstrap.Modal(byId('subItemModal'));
+  const title = byId('subItemModalTitle');
+  const form = byId('subItemForm');
+  
   editingSubItem = null;
 
   if (subIndex !== null) {
+    // Edit mode
+    title.textContent = "Sửa mục con";
     const sub = sections.find(s => s.id === sectionId).subitems[subIndex];
     byId('subTitle').value = sub.title;
     byId('subMeta').value = sub.meta;
     byId('subDesc').value = sub.desc;
     editingSubItem = { sectionId, index: subIndex };
   } else {
+    // Add mode
+    title.textContent = "Thêm mục con";
     byId('subTitle').value = '';
     byId('subMeta').value = '';
     byId('subDesc').value = '';
   }
 
-  byId('subTitle').focus();
+  modal.show();
+}
+
+function saveSubItem() {
+  const title = byId('subTitle').value.trim();
+  const meta = byId('subMeta').value.trim();
+  const desc = byId('subDesc').value.trim();
+
+  if (!title) {
+    alert('Vui lòng nhập tiêu đề');
+    byId('subTitle').focus();
+    return;
+  }
+
+  if (editingSubItem) {
+    // Edit existing subitem
+    const section = sections.find(s => s.id === editingSubItem.sectionId);
+    if (section && section.subitems && section.subitems[editingSubItem.index]) {
+      section.subitems[editingSubItem.index] = { 
+        ...section.subitems[editingSubItem.index],
+        title, 
+        meta, 
+        desc 
+      };
+    }
+  } else if (selectedSectionId) {
+    // Add new subitem to selected section
+    addSubItem(selectedSectionId, { title, meta, desc });
+  }
+
+  const modal = bootstrap.Modal.getInstance(byId('subItemModal'));
+  modal.hide();
+  renderPreview();
+  updateOutput();
+}
+
+function moveSubItemUp(sectionId, index) {
+  const section = sections.find(x => x.id === sectionId);
+  if (!section || !section.subitems || index <= 0) return;
+  
+  const temp = section.subitems[index - 1];
+  section.subitems[index - 1] = section.subitems[index];
+  section.subitems[index] = temp;
+  
+  renderPreview();
+  updateOutput();
+}
+
+function moveSubItemDown(sectionId, index) {
+  const section = sections.find(x => x.id === sectionId);
+  if (!section || !section.subitems || index >= section.subitems.length - 1) return;
+  
+  const temp = section.subitems[index + 1];
+  section.subitems[index + 1] = section.subitems[index];
+  section.subitems[index] = temp;
+  
+  renderPreview();
+  updateOutput();
 }
 
 /* ====== Section movement & visibility ====== */
@@ -92,6 +209,7 @@ function moveSectionUp(id) {
     sections.splice(idx - 1, 0, sections.splice(idx, 1)[0]);
     renderSectionList();
     renderPreview();
+    updateOutput();
   }
 }
 
@@ -101,6 +219,7 @@ function moveSectionDown(id) {
     sections.splice(idx + 1, 0, sections.splice(idx, 1)[0]);
     renderSectionList();
     renderPreview();
+    updateOutput();
   }
 }
 
@@ -110,6 +229,22 @@ function toggleVisible(id) {
     s.visible = !s.visible;
     renderSectionList();
     renderPreview();
+    updateOutput();
+  }
+}
+
+function deleteSection(id) {
+  if (!confirm('Bạn có chắc muốn xóa mục này?')) return;
+  
+  const idx = sections.findIndex(x => x.id === id);
+  if (idx !== -1) {
+    sections.splice(idx, 1);
+    if (selectedSectionId === id) {
+      selectedSectionId = null;
+    }
+    renderSectionList();
+    renderPreview();
+    updateOutput();
   }
 }
 
@@ -123,7 +258,10 @@ function renderSectionList() {
     div.innerHTML = `
       <div>
         <strong style="font-size:13px">${s.title}</strong>
-        <div style="font-size:12px;color:#666">${s.visible ? '' : '(Đã ẩn)'}</div>
+        <div style="font-size:12px;color:#666">
+          ${s.visible ? '' : '(Đã ẩn)'}
+          ${s.subitems && s.subitems.length > 0 ? ` (${s.subitems.length} mục con)` : ''}
+        </div>
       </div>
       <div style="display:flex;align-items:center">
         <button title="Chọn" onclick="selectSection('${s.id}')" class="btn btn-ghost">Chọn</button>
@@ -131,17 +269,48 @@ function renderSectionList() {
     el.appendChild(div);
   });
 
-  // show/hide selected controls
+  // Update selected section controls
+  updateSelectedControls();
+}
+
+function updateSelectedControls() {
+  const controls = byId('selectedControls');
   if (!selectedSectionId) {
-    byId('selectedControls').style.display = 'none';
+    controls.style.display = 'none';
     return;
   }
-  byId('selectedControls').style.display = 'block';
+  
+  controls.style.display = 'block';
   const s = sections.find(x => x.id === selectedSectionId);
   byId('selName').textContent = s.title;
   byId('selTitleColor').value = s.titleColor || '#000000';
   byId('selContentColor').value = s.contentColor || '#444444';
   byId('selVisible').checked = !!s.visible;
+  
+  // Update event listeners for controls
+  byId('selTitleColor').onchange = (e) => {
+    s.titleColor = e.target.value;
+    renderPreview();
+    updateOutput();
+  };
+  
+  byId('selContentColor').onchange = (e) => {
+    s.contentColor = e.target.value;
+    renderPreview();
+    updateOutput();
+  };
+  
+  byId('selVisible').onchange = (e) => {
+    s.visible = e.target.checked;
+    renderSectionList();
+    renderPreview();
+    updateOutput();
+  };
+  
+  byId('moveUpBtn').onclick = () => moveSectionUp(selectedSectionId);
+  byId('moveDownBtn').onclick = () => moveSectionDown(selectedSectionId);
+  byId('deleteBtn').onclick = () => deleteSection(selectedSectionId);
+  byId('addSubItemBtn').onclick = () => showSubItemForm(selectedSectionId);
 }
 
 function renderPreview() {
@@ -171,7 +340,6 @@ function renderPreview() {
     byId(id).innerText = profile[id] || '';
   });
 
-  // Sections
   const container = byId('sectionsContainer');
   container.innerHTML = '';
   sections.forEach(s => {
@@ -186,22 +354,30 @@ function renderPreview() {
     titleRow.style.display = 'flex';
     titleRow.style.justifyContent = 'space-between';
     titleRow.style.alignItems = 'center';
+    titleRow.style.marginBottom = '10px';
 
     const h4 = document.createElement('h4');
     h4.innerText = s.title;
     h4.style.color = s.titleColor || '#111';
+    h4.style.margin = '0';
     if (editMode) {
       h4.contentEditable = 'true';
-      h4.oninput = () => { s.title = h4.innerText; renderSectionList(); };
+      h4.oninput = () => { 
+        s.title = h4.innerText; 
+        renderSectionList(); 
+        updateOutput();
+      };
     }
 
     const actions = document.createElement('div');
     actions.className = 'section-actions';
+    actions.style.display = editMode ? 'flex' : 'none';
+    actions.style.gap = '5px';
     actions.innerHTML = `
-      <button title="Up" onclick="moveSectionUp('${s.id}')">⬆</button>
-      <button title="Down" onclick="moveSectionDown('${s.id}')">⬇</button>
-      <button title="Hide/Show" onclick="toggleVisible('${s.id}')">${s.visible ? '👁️' : '🚫'}</button>
-      <button title="Add subitem" onclick="addSubItem('${s.id}')">➕</button>
+      <button class="btn btn-sm btn-outline-secondary" title="Di chuyển lên" onclick="moveSectionUp('${s.id}')">⬆</button>
+      <button class="btn btn-sm btn-outline-secondary" title="Di chuyển xuống" onclick="moveSectionDown('${s.id}')">⬇</button>
+      <button class="btn btn-sm btn-outline-secondary" title="Ẩn/hiện" onclick="toggleVisible('${s.id}')">${s.visible ? '👁️' : '🚫'}</button>
+      <button class="btn btn-sm btn-primary" title="Thêm mục con" onclick="showSubItemForm('${s.id}')">+ Mục con</button>
     `;
     titleRow.appendChild(h4);
     titleRow.appendChild(actions);
@@ -209,35 +385,78 @@ function renderPreview() {
     // Content
     const content = document.createElement('div');
     content.className = 'section-content';
-    content.innerHTML = s.content;
     content.style.color = s.contentColor || '#444';
 
-    if (s.subitems) {
-      s.subitems.forEach((sub,i)=>{
+    // HIỂN THỊ NỘI DUNG GỐC CỦA SECTION (nếu có)
+    if (s.content && s.content.trim() !== '') {
+      const originalContent = document.createElement('div');
+      originalContent.innerHTML = s.content;
+      if (editMode) {
+        originalContent.contentEditable = 'true';
+        originalContent.oninput = () => { 
+          s.content = originalContent.innerHTML; 
+          updateOutput(); 
+        };
+      }
+      content.appendChild(originalContent);
+    }
+
+    // HIỂN THỊ CÁC MỤC CON (nếu có) - DƯỚI nội dung gốc
+    if (s.subitems && s.subitems.length > 0) {
+      // Thêm khoảng cách giữa nội dung gốc và mục con
+      if (s.content && s.content.trim() !== '') {
+        const spacer = document.createElement('div');
+        spacer.style.height = '15px';
+        content.appendChild(spacer);
+      }
+      
+      s.subitems.forEach((sub, i) => {
         const subEl = document.createElement("div");
-        subEl.className="sub-item border-start ps-2 mb-2";
-        subEl.innerHTML = `
-          <div class="sub-title fw-bold">${sub.title}</div>
-          <div class="sub-meta text-muted small">${sub.meta}</div>
-          <div class="sub-desc">${sub.desc}</div>
-          ${editMode ? `<button onclick="deleteSubItem('${s.id}', ${i})">🗑️</button>
-                        <button onclick="showSubItemForm('${s.id}', ${i})">✏️</button>` : ""}
+        subEl.className = "sub-item mb-3 p-2 border-start border-3";
+        subEl.style.borderLeftColor = design.themeColor + '40';
+        subEl.style.marginLeft = '10px';
+        subEl.style.paddingLeft = '15px';
+        
+        let subContent = `
+          <div class="sub-title fw-bold mb-1">${sub.title}</div>
+          ${sub.meta ? `<div class="sub-meta text-muted small mb-1">${sub.meta}</div>` : ''}
+          ${sub.desc ? `<div class="sub-desc">${sub.desc}</div>` : ''}
         `;
+        
+        if (editMode) {
+          subContent += `
+            <div class="mt-2 d-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary" onclick="moveSubItemUp('${s.id}', ${i})" ${i === 0 ? 'disabled' : ''}>⬆</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="moveSubItemDown('${s.id}', ${i})" ${i === s.subitems.length - 1 ? 'disabled' : ''}>⬇</button>
+              <button class="btn btn-sm btn-outline-primary" onclick="showSubItemForm('${s.id}', ${i})">Sửa</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSubItem('${s.id}', ${i})">Xóa</button>
+            </div>
+          `;
+        }
+        
+        subEl.innerHTML = subContent;
         content.appendChild(subEl);
       });
     }
 
-    if (editMode) {
-      content.contentEditable = 'true';
-      content.oninput = () => { s.content = content.innerHTML; updateOutput(); };
+    // Nếu section không có nội dung gốc và không có mục con, hiển thị placeholder
+    if ((!s.content || s.content.trim() === '') && (!s.subitems || s.subitems.length === 0)) {
+      const placeholder = document.createElement('div');
+      placeholder.innerHTML = '<em style="color:#999">Nhập nội dung cho mục này...</em>';
+      if (editMode) {
+        placeholder.contentEditable = 'true';
+        placeholder.oninput = () => { 
+          s.content = placeholder.innerHTML; 
+          updateOutput(); 
+        };
+      }
+      content.appendChild(placeholder);
     }
 
     block.appendChild(titleRow);
     block.appendChild(content);
     container.appendChild(block);
   });
-
-  updateOutput();
 }
 
 /* ====== Avatar upload ====== */
@@ -250,6 +469,7 @@ function handleAvatarFile(files) {
   reader.onload = function (ev) {
     profile.avatarDataUrl = ev.target.result;
     renderPreview();
+    updateOutput();
   }
   reader.readAsDataURL(f);
 }
@@ -271,6 +491,7 @@ byId('toggleEditBtn').addEventListener('click', () => {
       else if (id === 'website') profile[id] = el.innerText.replace('Website:', '').trim();
       else if (id === 'address') profile[id] = el.innerText.replace('Địa chỉ:', '').trim();
       else profile[id] = el.innerText;
+      updateOutput();
     };
   });
 
@@ -278,14 +499,30 @@ byId('toggleEditBtn').addEventListener('click', () => {
 });
 
 /* ====== Global design controls ====== */
-byId('fontFamily').addEventListener('change', e => { design.fontFamily = e.target.value; renderPreview(); });
-byId('fontSize').addEventListener('input', e => { design.fontSize = Number(e.target.value); renderPreview(); });
-byId('lineHeight').addEventListener('input', e => { design.lineHeight = Number(e.target.value); renderPreview(); });
-byId('themeColor').addEventListener('input', e => { design.themeColor = e.target.value; renderPreview(); });
+byId('fontFamily').addEventListener('change', e => { 
+  design.fontFamily = e.target.value; 
+  renderPreview(); 
+  updateOutput();
+});
+byId('fontSize').addEventListener('input', e => { 
+  design.fontSize = Number(e.target.value); 
+  renderPreview(); 
+  updateOutput();
+});
+byId('lineHeight').addEventListener('input', e => { 
+  design.lineHeight = Number(e.target.value); 
+  renderPreview(); 
+  updateOutput();
+});
+byId('themeColor').addEventListener('input', e => { 
+  design.themeColor = e.target.value; 
+  renderPreview(); 
+  updateOutput();
+});
 
 /* ====== Save / Load / Export ====== */
 function updateOutput() {
-   const profileCopy = { ...profile };
+  const profileCopy = { ...profile };
   delete profileCopy.avatarDataUrl;
 
   const data = { profile: profileCopy, sections, design };
@@ -307,6 +544,7 @@ byId('loadLocalBtn').addEventListener('click', () => {
   selectedSectionId = null;
   renderSectionList();
   renderPreview();
+  updateOutput();
   alert('Đã load từ localStorage');
 });
 
@@ -318,31 +556,64 @@ byId('exportBtn').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-/* ====== Server save (JSON + avatar) ====== */
+/* ====== Server save ====== */
 byId('saveServerBtn').addEventListener('click', async () => {
-    const outputEl = byId('output');
-    if (!outputEl.innerText) return alert('Không có dữ liệu để lưu');
-  
-    let cvData;
-    try { cvData = JSON.parse(outputEl.innerText); }
-    catch(err) { return alert('Dữ liệu không hợp lệ: ' + err); }
-  
-    const formData = new FormData();
-    formData.append('cv_data', JSON.stringify(cvData));  // chỉ info, không avatar
-  
-    // Nếu có avatar
-    const avatarFile = byId('avatarInput').files[0];
-    if (avatarFile) formData.append('avatar', avatarFile);
-  
+  const outputEl = byId('output');
+  if (!outputEl.innerText) return alert('Không có dữ liệu để lưu');
+
+  let cvData;
+  try { cvData = JSON.parse(outputEl.innerText); }
+  catch(err) { return alert('Dữ liệu không hợp lệ: ' + err); }
+
+  const formData = new FormData();
+  formData.append('cv_data', JSON.stringify(cvData));
+
+  const avatarFile = byId('avatarInput').files[0];
+  if (avatarFile) formData.append('avatar', avatarFile);
+
+  try {
     const res = await fetch('/cv/create-cv', {
       method: 'POST',
       body: formData
     });
-  
+
     const result = await res.json();
     if (res.ok) alert('Lưu CV thành công, ID: ' + result.cv_id);
     else alert('Lỗi: ' + result.error);
-  });
+  } catch (error) {
+    alert('Lỗi kết nối: ' + error.message);
+  }
+});
+
+/* ====== Event Listeners ====== */
+byId('addSectionBtn').addEventListener('click', () => {
+  const key = byId('addTemplate').value;
+  const tpl = sectionTemplates[key];
+  if (!tpl) return;
+
+  const newSection = {
+    id: generateId(),
+    key: tpl.key,
+    title: tpl.title,
+    content: tpl.content,
+    titleColor: "#111",
+    contentColor: "#444",
+    visible: true
+  };
+
+  sections.push(newSection);
+  renderSectionList();
+  renderPreview();
+  updateOutput();
+  selectSection(newSection.id);
+});
+
+byId('saveSubItemBtn').addEventListener('click', saveSubItem);
+
+// Double-click preview to toggle edit mode
+byId('preview').addEventListener('dblclick', () => {
+  byId('toggleEditBtn').click();
+});
 
 /* ====== Init ====== */
 selectSection(null);

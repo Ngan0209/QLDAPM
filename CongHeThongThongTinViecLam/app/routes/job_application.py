@@ -28,6 +28,28 @@ def create_form():
     
 #     return jsonify(data), 200
 
+# routes.py - Thêm endpoint để render CV
+@cv_bp.route('/preview/<int:template_id>')
+def preview_template(template_id):
+    template = Templates.query.get_or_404(template_id)
+    
+    # Dữ liệu mẫu để preview
+    sample_data = {
+        'name': 'Nguyễn Văn A',
+        'email': 'nguyenvana@example.com',
+        'phone': '0123 456 789',
+        'objective': 'Mong muốn được làm việc trong môi trường chuyên nghiệp...',
+        'experience': [
+            {'position': 'Developer', 'company': 'ABC Company', 'period': '2020-2022'},
+            {'position': 'Intern', 'company': 'XYZ Corp', 'period': '2019-2020'}
+        ],
+        # ... thêm các dữ liệu mẫu khác
+    }
+    
+    return render_template('candidate/preview.html', 
+                         template=template, 
+                         data=sample_data)
+
 @cv_bp.route("/templates-screen", methods=["GET"])
 def templates_screen():
     templates = Templates.query.order_by(Templates.created_at.desc()).all()
@@ -52,6 +74,7 @@ def get_template_detail(template_id):
     template = Templates.query.get_or_404(template_id)
     return render_template("candidate/template_detail.html", template=template)
 
+
 @cv_bp.route("/create-cv", methods=["POST"])
 @login_required
 def create_cv():
@@ -72,7 +95,6 @@ def create_cv():
     if avatar_file and avatar_file.filename != "":
         avatar_url = upload_avatar(avatar_file)
 
-    # Tạo JobApplication mới
     app = JobApplication(
         user_id=user.id,
         cv_data=cv_data,
@@ -82,3 +104,40 @@ def create_cv():
     db.session.commit()
 
     return jsonify({"status": "ok", "cv_id": app.id})
+
+@cv_bp.route("/my-cvs-screen", methods=["GET"])
+@login_required
+def my_cvs_screen():
+    
+    user = current_user
+    print(user.id)
+    
+    cvs = JobApplication.query.filter_by(user_id=user.id).all()
+    print(cvs)
+    return render_template("candidate/my_cvs.html", cvs=cvs)
+
+
+@cv_bp.route("/my-cvs/<int:application_id>", methods=["GET"])
+@login_required
+def view_generated_cv(application_id):
+    user = current_user
+    app = JobApplication.query.filter_by(id=application_id, user_id=user.id).first_or_404()
+    return render_template("candidate/view_cv.html", cv=app)
+
+
+@cv_bp.route("/my-cvs/<int:application_id>/json", methods=["GET"])
+@login_required
+def api_cv_detail(application_id):
+    user = current_user
+    app = JobApplication.query.filter_by(id=application_id, user_id=user.id).first_or_404()
+
+    html_content = render_template("candidate/view_cv.html", cv=app)
+
+    data = {
+        "id": app.id,
+        "created_at": app.created_at.strftime("%Y-%m-%d %H:%M"),
+        "avatar": app.avatar,
+        "cv_data": app.cv_data,
+        "html": html_content
+    }
+    return jsonify(data)
