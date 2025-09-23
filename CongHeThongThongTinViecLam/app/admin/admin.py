@@ -122,7 +122,11 @@ class JobTypeAdmin(AdminModelViewBase):
 
 # ------------------- CompanyAdmin -------------------
 class CompanyAdmin(AdminModelViewBase):
-    form_excluded_columns = ['job_postings']
+    column_list = (
+        'company_name', 'company_tax_id', 'business_type', 'company_address',
+        'established_date', 'status', 'phone_contact', 'legal_representative',
+        'province_name', 'district_name', 'ward_name', 'user_name', '_actions'
+    )
 
     form_columns = [
         'company_name', 'company_tax_id', 'business_type', 'company_address',
@@ -130,10 +134,116 @@ class CompanyAdmin(AdminModelViewBase):
         'province_code', 'district_code', 'ward_code', 'user_id'
     ]
 
+    form_overrides = {
+        'business_status': SelectField,
+        'province_code': SelectField,
+        'district_code': SelectField,
+        'ward_code': SelectField,
+        'user_id': SelectField,
+    }
+
+    form_args = {
+        'business_status': {
+            'choices': [(True, 'Hoạt động'), (False, 'Ngừng hoạt động')],
+            'coerce': lambda x: x == 'True' or x is True,
+        },
+        'user_id': {
+            'coerce': int,
+        }
+    }
+
+    def create_form(self, obj=None):
+        form = super().create_form(obj)
+        # Province
+        form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
+
+        # District
+        if form.province_code.data:
+            form.district_code.choices = [(d.code, d.full_name) for d in
+                                          District.query.filter_by(province_code=form.province_code.data).order_by(
+                                              District.name)]
+        else:
+            form.district_code.choices = []
+
+        # Ward
+        if form.district_code.data:
+            form.ward_code.choices = [(w.code, w.full_name) for w in
+                                      Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)]
+        else:
+            form.ward_code.choices = []
+
+        form.user_id.choices = [
+            (u.id, u.username)
+            for u in User.query
+            .filter(User.user_type == 'approver')
+            .order_by(User.id)
+            .all()
+        ]
+
+        return form
+
+    def edit_form(self, obj=None):
+        form = super().edit_form(obj)
+        # Province
+        form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
+
+        # District
+        if form.province_code.data:
+            form.district_code.choices = [(d.code, d.full_name) for d in
+                                          District.query.filter_by(province_code=form.province_code.data).order_by(
+                                              District.name)]
+        else:
+            form.district_code.choices = []
+
+        # Ward
+        if form.district_code.data:
+            form.ward_code.choices = [(w.code, w.full_name) for w in
+                                      Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)]
+        else:
+            form.ward_code.choices = []
+
+        form.user_id.choices = [
+            (u.id, u.username)
+            for u in User.query
+            .filter(User.user_type == 'approver')
+            .order_by(User.id)
+            .all()
+        ]
+
+        return form
+
+    def _populate_choices(self, form):
+        # Province
+        form.province_code.choices = [(p.code, p.full_name) for p in Province.query.order_by(Province.name).all()]
+        # District
+        if form.province_code.data:
+            form.district_code.choices = [
+                (d.code, d.full_name)
+                for d in District.query.filter_by(province_code=form.province_code.data).order_by(District.name)
+            ]
+        else:
+            form.district_code.choices = []
+        # Ward
+        if form.district_code.data:
+            form.ward_code.choices = [
+                (w.code, w.full_name)
+                for w in Ward.query.filter_by(district_code=form.district_code.data).order_by(Ward.name)
+            ]
+        else:
+            form.ward_code.choices = []
+
+        form.user_id.choices = [(u.id, u.username) for u in User.query.order_by(User.id).all()]
+
     def on_model_change(self, form, model, is_created):
-        super().on_model_change(form, model, is_created)
+        form.populate_obj(model)
+
         if hasattr(form, 'business_status'):
             model.business_status = bool(form.business_status.data)
+
+        super().on_model_change(form, model, is_created)
+
+    edit_template = 'admin/company.html'
+    create_template = 'admin/company.html'
 
 # ------------------- JobPostingAdmin -------------------
 class JobPostingAdmin(AdminModelViewBase):
