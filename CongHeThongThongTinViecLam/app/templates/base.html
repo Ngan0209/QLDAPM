@@ -14,15 +14,25 @@
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> -->
 
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        html, body {
+            height: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
         }
-
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1 0 auto;
+        }
         footer {
             background: #f1f3f5;
             font-size: 14px;
             color: #666;
+            flex-shrink: 0;
         }
     </style>
 
@@ -31,80 +41,127 @@
 </head>
 
 <body>
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('home.index') }}">Job System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('home.index') }}">Job System</a>
 
-            <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home.index') }}">Trang chủ</a>
-                    </li>
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.profile_screen') }}">Thông tin cá nhân</a>
-                    </li>
-                    <li class="nav-item">
-                        <form method="post" action="{{ url_for('auth.logout') }}">
-                            <button class="btn btn-link nav-link" type="submit">Đăng xuất</button>
-                        </form>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('cv.templates_screen') }}" >
-                            Mẫu
-                        </a>
-                    </li>
+        <!-- Toggle mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent" aria-controls="navbarContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('cv.create_form') }}" >
-                            Tạo CV
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('cv.my_cvs_screen') }}" >
-                            CV của tôi
-                        </a>
-                    </li>
-                    <!-- <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('cv.create_cv') }}" id="navbarDropdown" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            Tạo CV
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                    </li> -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <!-- Left menu -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home.index') }}">Trang chủ</a>
+                </li>
 
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login-screen') }}">Đăng nhập</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register-screen') }}">Đăng ký</a>
-                    </li>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.user_type == "candidate" %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('cv.my_cvs_screen') }}">CV của tôi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('cv.create_form') }}" >
+                                Tạo CV
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('cv.templates_screen') }}" >
+                                Mẫu
+                            </a>
+                        </li>
+                    {% elif current_user.user_type == "approver" %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('company.my_jobs') }}">Quản lý tin tuyển dụng</a>
+                        </li>
+                    {% elif current_user.user_type == "admin" %}
+                        <li class="nav-item">
+                            <a class="nav-link text-danger fw-bold" href="{{ url_for('admin.dashboard') }}">
+                                Quản trị hệ thống
+                            </a>
+                        </li>
                     {% endif %}
-                </ul>
+                {% endif %}
+            </ul>
 
-                <form class="d-flex me-3">
-                    <input class="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
+            <!-- Right actions -->
+            <div class="d-flex align-items-center ms-auto">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.user_type == "candidate" %}
+                        <a href="{{ url_for('cv.templates_screen') }}" class="btn btn-primary fw-semibold me-3">
+                            Tạo hồ sơ
+                        </a>
+                    {% elif current_user.user_type == "approver" %}
+                        <a href="{{ url_for('job.create') }}" class="btn btn-primary fw-semibold me-3">
+                            Đăng tuyển
+                        </a>
+                    {% endif %}
 
-                <div class="d-none d-lg-block">
-                    <span class="me-2 text-muted">Bạn là nhà tuyển dụng?</span>
-                    <a href="#" class="btn btn-primary btn-sm">Đăng tin tuyển dụng</a>
-                </div>
+                    <!-- Dropdown user -->
+                    <div class="dropdown">
+                        <a href="#" class="d-flex text-dark align-items-center text-decoration-none dropdown-toggle"
+                           id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if current_user.avatar %}
+                                <img src="{{ current_user.avatar }}" alt="Avatar"
+                                     class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2"
+                                     style="width:32px; height:32px; color:white; font-weight:500; font-size:1rem;">
+                                    {{ current_user.firstname[0]|upper }}{{ current_user.lastname[0]|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="fw-semibold">{{ current_user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('auth.profile_screen') }}">Trang cá nhân</a>
+                            </li>
+                            {% if current_user.user_type == "approver" %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('company.my_jobs') }}">Quản lý tin tuyển dụng</a>
+                                </li>
+                            {% endif %}
+                            {% if current_user.user_type == "admin" %}
+                                <li>
+                                    <a class="dropdown-item text-danger fw-bold" href="{{ url_for('admin.dashboard') }}">
+                                        Quản trị hệ thống
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{{ url_for('auth.logout') }}">
+                                    <button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('auth.register-screen') }}" class="btn btn-outline-primary fw-semibold me-2">Đăng ký</a>
+                    <a href="{{ url_for('auth.login-screen') }}" class="btn btn-primary fw-semibold">Đăng nhập</a>
+                {% endif %}
             </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <!-- Main container -->
     <div class="container mt-5">

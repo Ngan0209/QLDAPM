@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết việc làm{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <!-- Header giống mẫu -->
+        <div class="mb-3">
+          <h2 class="fw-bold d-inline-block" style="font-size:2rem;">
+            {{ job.job_title }}
+            <span class="text-success" style="font-size:1.2rem;">
+              <!-- Có thể thêm check xanh nếu muốn -->
+            </span>
+          </h2>
+        </div>
+        <div class="d-flex flex-wrap gap-4 mb-3">
+          <!-- Mức lương -->
+          <div class="d-flex align-items-center me-4">
+            <span class=" d-flex align-items-center justify-content-center me-2">
+              <i class="bi bi-currency-dollar text-secondary" style="font-size:1.8rem;"></i>
+            </span>
+            <div>
+              <div class="text-secondary" style="font-size:1rem;">Mức lương</div>
+              <div class="fw-bold" style="font-size:1.1rem;">
+                {{ job.salary_range or "Thỏa thuận" }}
+              </div>
+            </div>
+          </div>
+          <!-- Địa điểm -->
+          <div class="d-flex align-items-center me-4">
+            <span class="d-flex align-items-center justify-content-center me-2">
+              <i class="bi bi-geo-alt text-secondary" style="font-size:1.8rem;"></i>
+            </span>
+            <div>
+              <div class="text-secondary" style="font-size:1rem;">Địa điểm</div>
+              <div class="fw-bold" style="font-size:1.1rem;">
+                {% set location_list = [] %}
+                {% if job.ward and job.ward.name %}
+                  {% set location_list = location_list + [job.ward.name] %}
+                {% endif %}
+                {% if job.district and job.district.name %}
+                  {% set location_list = location_list + [job.district.name] %}
+                {% endif %}
+                {% if job.province and job.province.name %}
+                  {% set location_list = location_list + [job.province.name] %}
+                {% endif %}
+                {{ location_list|join(', ') }}
+              </div>
+            </div>
+          </div>
+          <!-- Cấp bậc -->
+          <div class="d-flex align-items-center">
+            <span class="d-flex align-items-center justify-content-center me-2">
+              <i class="bi bi-bar-chart text-secondary" style="font-size:1.8rem;"></i>
+            </span>
+            <div>
+              <div class="text-secondary" style="font-size:1rem;">Cấp bậc</div>
+              <div class="fw-bold" style="font-size:1.1rem;">
+                {{ job.job_type.type if job.job_type else "Chưa rõ cấp bậc" }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <span class="px-3 py-2 bg-light rounded-3 d-inline-flex align-items-center" style="font-size:1rem;">
+            <i class="bi bi-clock me-2 text-secondary"></i>
+            Hạn nộp hồ sơ:
+            <span class="ms-1 fw-bold text-dark">
+              {{ job.expiration_date.strftime('%d/%m/%Y') if job.expiration_date else "Không xác định" }}
+            </span>
+          </span>
+        </div>
+        <!-- Nút Ứng tuyển ngay -->
+        <a href="#" class="btn btn-success w-100 d-flex align-items-center justify-content-center mt-4 mb-4 py-2 rounded-3"
+          style="background-color: #0d6efd; font-weight:600; font-size:1.2rem; border:none;">
+          <i class="bi bi-send me-2" style="font-size:1.3rem;"></i>
+          Ứng tuyển ngay
+        </a>
+        <!-- Nội dung chi tiết -->
+        <div class="mb-3">
+          <strong>Mô tả công việc:</strong>
+          <div class="mt-2">{{ job.job_description | replace('\n', '<br>') | safe }}</div>
+        </div>
+        {% if job.requirements %}
+        <div class="mb-3">
+          <strong>Yêu cầu ứng viên:</strong>
+          <div class="mt-2">{{ job.requirements | replace('\n', '<br>') | safe }}</div>
+        </div>
+        {% endif %}
+        {% if job.benefits %}
+        <div class="mb-3">
+          <strong>Quyền lợi:</strong>
+          <div class="mt-2">{{ job.benefits | replace('\n', '<br>') | safe }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    {% if job.company %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-body d-flex align-items-center">
+        {% if job.company.avatar %}
+          <img src="{{ job.company.avatar }}" alt="Avatar công ty"
+               class="me-3" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid #eee;">
+        {% else %}
+          <div class="me-3 d-flex align-items-center justify-content-center"
+               style="width:64px; height:64px; background:#f8f9fa; border-radius:8px; border:1px solid #eee;">
+            <i class="bi bi-building" style="font-size:2rem; color:#ccc;"></i>
+          </div>
+        {% endif %}
+        <div>
+          <h5 class="mb-2">{{ job.company.company_name }}</h5>
+          {% if job.company.company_address %}
+            <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ job.company.company_address }}</p>
+          {% endif %}
+          {% if job.company.phone_contact %}
+            <p class="mb-1"><i class="bi bi-telephone"></i> {{ job.company.phone_contact }}</p>
+          {% endif %}
+          {% if job.company.user and job.company.user.email %}
+            <p class="mb-1"><i class="bi bi-envelope"></i> {{ job.company.user.email }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}

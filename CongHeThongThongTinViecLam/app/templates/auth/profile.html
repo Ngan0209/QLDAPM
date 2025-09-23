@@ -32,6 +32,29 @@
                         <li class="list-group-item"><strong>Ngày sinh:</strong> {{ user.dob or '-' }}</li>
                     </ul>
 
+                    {# --- THÔNG TIN CÔNG TY --- #}
+                    {% if company %}
+                        <hr>
+                        <div class="d-flex align-items-center justify-content-between mt-4 mb-3">
+                            <h4 class="text-primary mb-0">Thông tin công ty</h4>
+                            <a href="{{ url_for('company.edit_company') }}" class="btn btn-link p-0" title="Chỉnh sửa thông tin doanh nghiệp">
+                                <i class="bi bi-pencil-square fs-4 text-warning"></i>
+                            </a>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Tên công ty:</strong> {{ company.company_name }}</li>
+                            <li class="list-group-item"><strong>Mã số thuế:</strong> {{ company.company_tax_id or '-' }}</li>
+                            <li class="list-group-item"><strong>Địa chỉ:</strong> {{ company.company_address or '-' }}</li>
+                            <li class="list-group-item"><strong>Loại hình kinh doanh:</strong> {{ company.business_type or '-' }}</li>
+                            <li class="list-group-item"><strong>Người đại diện pháp luật:</strong> {{ company.legal_representative or '-' }}</li>
+                            <li class="list-group-item"><strong>Số điện thoại công ty:</strong> {{ company.phone_contact or '-' }}</li>
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-warning mt-4 text-center">
+                            Bạn chưa tạo thông tin công ty.
+                        </div>
+                    {% endif %}
+
                     <div class="mt-4 text-center">
                         <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Đăng xuất</a>
                     </div>

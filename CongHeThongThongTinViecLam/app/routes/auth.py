@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, current_user
 from app.extensions import db
-from app.models import User, UserRole
+from app.models import User, UserRole, Company
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import upload_avatar
 from flask import redirect, url_for
@@ -87,7 +87,9 @@ def get_user_info():
 @login_required
 def profile_screen():
     user = current_user
-    return render_template("auth/profile.html", user=user)
+    company = user.company
+
+    return render_template("auth/profile.html", user=user, company=company)
 
 
 @auth_bp.route("/login-screen",endpoint="login-screen")

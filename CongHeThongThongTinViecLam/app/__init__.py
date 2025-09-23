@@ -12,6 +12,8 @@ from .routes.job_application import cv_bp
 from .models import User
 from .admin.admin import init_admin
 from .routes.admin import admin_template_bp
+from .routes.job_posting import job_posting_bp
+from .routes.company import company_bp
 
 load_dotenv()
 
@@ -45,6 +47,8 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(cv_bp, url_prefix="/cv")
     app.register_blueprint(admin_template_bp, url_prefix="/admin/template")  # Đăng ký admin_template_bp
+    app.register_blueprint(job_posting_bp, url_prefix="/job")
+    app.register_blueprint(company_bp, url_prefix="/company")
 
 
     return app
