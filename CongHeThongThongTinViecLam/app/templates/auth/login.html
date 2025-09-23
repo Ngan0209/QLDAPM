@@ -15,6 +15,14 @@
             <input type="password" class="form-control" id="password" name="password" required>
         </div>
 
+        <a href="{{ url_for('google.login') }}" class="btn btn-danger">
+            Đăng nhập với Google
+        </a>
+
+        <a href="{{ url_for('facebook.login') }}" class="btn btn-primary">
+            Đăng nhập với Facebook
+        </a>
+
         <div class="mb-3 form-check">
             <input type="checkbox" class="form-check-input" id="remember" name="remember">
             <label class="form-check-label" for="remember">Remember me</label>

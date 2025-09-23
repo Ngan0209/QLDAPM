@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, flash
 from flask_login import login_user, logout_user, current_user
 from app.extensions import db
 from app.models import User, UserRole
@@ -7,6 +7,8 @@ from config import upload_avatar
 from flask import redirect, url_for
 from flask import Blueprint, render_template
 from flask_login import login_required
+from flask_dance.contrib.google import google
+from flask_dance.contrib.facebook import facebook
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -117,3 +119,30 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('auth.login-screen'))
+
+# Đăng nhập với Google
+@auth_bp.route("/google")
+def google_login():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+    resp = google.get("/oauth2/v2/userinfo")
+    user_info = resp.json()
+    email = user_info.get("email")
+    name = user_info.get("name")
+
+    # Xử lý đăng nhập hoặc tạo tài khoản mới
+    flash(f"Đăng nhập thành công với Google: {name} ({email})", "success")
+    return redirect(url_for("home"))
+
+# Đăng nhập với Facebook
+@auth_bp.route("/facebook")
+def facebook_login():
+    if not facebook.authorized:
+        return redirect(url_for("facebook.login"))
+    resp = facebook.get("/me?fields=id,name,email")
+    user_info = resp.json()
+    email = user_info.get("email")
+    name = user_info.get("name")
+
+    flash(f"Đăng nhập thành công với Facebook: {name} ({email})", "success")
+    return redirect(url_for("home"))
