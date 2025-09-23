@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách CV của tôi{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">📄 Danh sách CV của bạn</h2>
+
+  {% if cvs %}
+  <div class="row">
+    {% for cv in cvs %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">CV #{{ cv.id }}</h5>
+          <p class="card-text">
+            <small class="text-muted">
+              Ngày tạo: {{ cv.created_at.strftime("%d/%m/%Y %H:%M") }}
+            </small>
+          </p>
+
+          {% if cv.avatar %}
+          <img src="{{ cv.avatar }}" alt="Avatar" class="img-thumbnail mb-2" width="80">
+          {% endif %}
+
+          {% if cv.cv_data.profile.name %}
+          <p class="mb-1"><strong>{{ cv.cv_data.profile.name }}</strong></p>
+          {% endif %}
+          {% if cv.cv_data.profile.jobtitle %}
+          <p class="text-muted mb-2">{{ cv.cv_data.profile.jobtitle }}</p>
+          {% endif %}
+        </div>
+        <div class="card-footer text-center">
+          <a href="{{ url_for('cv.view_generated_cv', application_id=cv.id) }}" 
+             class="btn btn-primary btn-sm">
+            👁 Xem chi tiết
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    Bạn chưa tạo CV nào. 
+    <a href="{{ url_for('cv.templates_screen') }}">👉 Tạo CV ngay</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

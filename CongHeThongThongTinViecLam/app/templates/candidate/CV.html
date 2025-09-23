@@ -4,6 +4,8 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cv.css') }}">
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
@@ -82,22 +84,226 @@
         <button class="btn btn-outline-secondary btn-sm" id="moveUpBtn">⬆️ Lên</button>
         <button class="btn btn-outline-secondary btn-sm" id="moveDownBtn">⬇️ Xuống</button>
         <button class="btn btn-danger btn-sm" id="deleteBtn">🗑️ Xóa</button>
-        
       </div>
       <div class="mt-2">
         <button class="btn btn-success btn-sm w-100" id="addSubItemBtn">➕ Thêm mục con</button>
       </div>
-      <div id="subItemFormContainer" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px; border-radius:5px;">
-        <h5>Thêm / Sửa mục con</h5>
-        <input type="text" id="subTitle" placeholder="Tiêu đề" class="form-control mb-1" />
-        <input type="text" id="subMeta" placeholder="Thời gian / vị trí" class="form-control mb-1" />
-        <textarea id="subDesc" placeholder="Mô tả chi tiết..." class="form-control mb-1"></textarea>
-        <div class="d-flex justify-content-end gap-2 mt-1">
-          <button id="saveSubItemBtn" class="btn btn-success btn-sm">💾 Lưu</button>
-          <button id="cancelSubItemBtn" class="btn btn-secondary btn-sm">❌ Hủy</button>
+    </div>
+
+    <!-- Modal Form cho mục con -->
+    <div id="subItemModal" class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="subItemModalTitle">Thêm mục con</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="subItemForm">
+              <div class="mb-3">
+                <label for="subTitle" class="form-label">Tiêu đề mục con *</label>
+                <input type="text" class="form-control" id="subTitle" placeholder="Ví dụ: Nhân viên kinh doanh" required>
+              </div>
+              <div class="mb-3">
+                <label for="subMeta" class="form-label">Thông tin bổ sung</label>
+                <input type="text" class="form-control" id="subMeta" placeholder="Ví dụ: Công ty ABC - 01/2020 đến 12/2023">
+              </div>
+              <div class="mb-3">
+                <label for="subDesc" class="form-label">Mô tả chi tiết</label>
+                <textarea class="form-control" id="subDesc" rows="4" placeholder="Mô tả công việc, thành tích, kỹ năng..."></textarea>
+                <div class="form-text">Có thể sử dụng HTML cơ bản như &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;</div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-primary" id="saveSubItemBtn">Lưu mục con</button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Modal Custom Toolbar -->
+<!-- Enhanced Toolbar Modal -->
+<div id="customToolbarModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">
+                  <i class="fas fa-paint-brush me-2"></i>Tùy chỉnh định dạng nâng cao
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+              <!-- Basic Formatting -->
+              <div class="toolbar-section">
+                  <div class="toolbar-section-title">Định dạng cơ bản</div>
+                  <div class="toolbar-container">
+                      <div class="toolbar-group">
+                          <label class="small">Font chữ</label>
+                          <select id="toolFontFamily" class="form-select form-select-sm">
+                              <option value="">Mặc định</option>
+                              <option value="Arial, Helvetica, sans-serif">Arial</option>
+                              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                              <option value="Georgia, serif">Georgia</option>
+                              <option value="'Courier New', monospace">Courier New</option>
+                              <option value="cursive">Cursive</option>
+                          </select>
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Cỡ chữ</label>
+                          <select id="toolFontSize" class="form-select form-select-sm">
+                              <option value="">Mặc định</option>
+                              <option value="12px">Nhỏ (12px)</option>
+                              <option value="14px">Vừa (14px)</option>
+                              <option value="16px">Lớn (16px)</option>
+                              <option value="18px">Rất lớn (18px)</option>
+                              <option value="20px">Tiêu đề (20px)</option>
+                          </select>
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Màu chữ</label>
+                          <input type="color" id="toolTextColor" class="form-control form-control-color" value="#000000">
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Màu nền</label>
+                          <input type="color" id="toolBgColor" class="form-control form-control-color" value="#ffffff">
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Text Formatting -->
+              <div class="toolbar-section">
+                  <div class="toolbar-section-title">Định dạng văn bản</div>
+                  <div class="toolbar-container">
+                      <div class="toolbar-group">
+                          <label class="small">Kiểu chữ</label>
+                          <div class="btn-group w-100" role="group">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolBold" title="Đậm (Ctrl+B)">
+                                  <i class="fas fa-bold"></i>
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolItalic" title="Nghiêng (Ctrl+I)">
+                                  <i class="fas fa-italic"></i>
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolUnderline" title="Gạch chân (Ctrl+U)">
+                                  <i class="fas fa-underline"></i>
+                              </button>
+                          </div>
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Căn lề</label>
+                          <div class="btn-group w-100" role="group">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolAlignLeft" title="Căn trái">
+                                  <i class="fas fa-align-left"></i>
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolAlignCenter" title="Căn giữa">
+                                  <i class="fas fa-align-center"></i>
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolAlignRight" title="Căn phải">
+                                  <i class="fas fa-align-right"></i>
+                              </button>
+                          </div>
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Khoảng cách dòng</label>
+                          <div class="btn-group w-100" role="group">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolLineHeight1" title="Dãn cách 1.0">
+                                  1.0
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolLineHeight15" title="Dãn cách 1.5">
+                                  1.5
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolLineHeight2" title="Dãn cách 2.0">
+                                  2.0
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Quick Styles -->
+              <div class="toolbar-section">
+                  <div class="toolbar-section-title">Style nhanh</div>
+                  <div class="toolbar-container">
+                      <div class="toolbar-group">
+                          <label class="small">Mẫu có sẵn</label>
+                          <div class="btn-group-vertical w-100" role="group">
+                              <button type="button" class="btn btn-outline-primary btn-sm" id="toolStyleHeading" title="Tiêu đề">
+                                  <i class="fas fa-heading me-1"></i> Tiêu đề
+                              </button>
+                              <button type="button" class="btn btn-outline-success btn-sm" id="toolStyleHighlight" title="Làm nổi bật">
+                                  <i class="fas fa-highlighter me-1"></i> Nổi bật
+                              </button>
+                              <button type="button" class="btn btn-outline-info btn-sm" id="toolStyleQuote" title="Trích dẫn">
+                                  <i class="fas fa-quote-left me-1"></i> Trích dẫn
+                              </button>
+                          </div>
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Danh sách</label>
+                          <div class="btn-group w-100" role="group">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolListBullet" title="Danh sách bullet">
+                                  <i class="fas fa-list-ul"></i>
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolListNumber" title="Danh sách số">
+                                  <i class="fas fa-list-ol"></i>
+                              </button>
+                          </div>
+                      </div>
+
+                      <div class="toolbar-group">
+                          <label class="small">Thụt lề</label>
+                          <div class="btn-group w-100" role="group">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolIndent" title="Tăng thụt lề">
+                                  <i class="fas fa-indent"></i>
+                              </button>
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="toolOutdent" title="Giảm thụt lề">
+                                  <i class="fas fa-outdent"></i>
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Style Templates -->
+              <div class="toolbar-section">
+                  <div class="toolbar-section-title">Mẫu style đã lưu</div>
+                  <div id="styleTemplatesContainer" class="mb-3">
+                      <div class="text-muted small">Chưa có mẫu style nào</div>
+                  </div>
+                  <button type="button" class="btn btn-outline-success btn-sm w-100" id="toolSaveStyle">
+                      <i class="fas fa-save me-1"></i> Lưu style hiện tại
+                  </button>
+              </div>
+
+              <!-- Preview -->
+              <div class="toolbar-section">
+                  <div class="toolbar-section-title">Xem trước</div>
+                  <div id="toolPreview" class="p-3 bg-light rounded">
+                      Văn bản xem trước sẽ hiển thị ở đây...
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-warning" id="toolClear">
+                  <i class="fas fa-eraser me-1"></i> Xóa định dạng
+              </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  <i class="fas fa-times me-1"></i> Hủy
+              </button>
+              <button type="button" class="btn btn-primary" id="toolApply">
+                  <i class="fas fa-check me-1"></i> Áp dụng
+              </button>
+          </div>
+      </div>
+  </div>
+</div>
 
     <hr>
 
@@ -109,6 +315,7 @@
 
     <div class="mt-2 text-muted small">
       Ghi chú: Bấm <strong>🔓 Bật sửa</strong> để chỉnh nội dung trực tiếp. Double-click vào preview cũng bật sửa.
+      <br>Click vào bất kỳ văn bản nào và bấm <strong>🎨</strong> để mở toolbar tùy chỉnh.
     </div>
   </aside>
 
@@ -141,13 +348,14 @@
     </div>
   </main>
 </div>
-<pre id="output" class="bg-gray-100 p-2 rounded text-xs overflow-x-auto"></pre>
-<button id="saveServerBtn" class="btn btn-success">💾 Lưu lên server</button>
+
+<pre id="output" class="bg-gray-100 p-2 rounded text-xs overflow-x-auto mt-3"></pre>
+<button id="saveServerBtn" class="btn btn-success mt-2">💾 Lưu lên server</button>
 
 <input id="hiddenAvatarFile" type="file" accept="image/*" style="display:none">
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script src="{{ url_for('static', filename='js/cv.js') }}"></script>
-
 {% endblock %}
