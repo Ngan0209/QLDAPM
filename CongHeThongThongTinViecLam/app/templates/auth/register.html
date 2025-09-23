@@ -3,20 +3,73 @@
 {% block title %}Đăng ký{% endblock %}
 
 {% block content %}
-<h2>Đăng ký tài khoản</h2>
-<form method="post" enctype="multipart/form-data">
-    <label>Username:</label>
-    <input type="text" name="username" required><br>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Đăng ký tài khoản</h2>
 
-    <label>Email:</label>
-    <input type="email" name="email" required><br>
+                    <form method="post" action="{{ url_for('auth.register') }}" enctype="multipart/form-data">
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Tên đăng nhập</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
 
-    <label>Password:</label>
-    <input type="password" name="password" required><br>
+                        <!-- Firstname -->
+                        <div class="mb-3">
+                            <label for="firstname" class="form-label">Họ</label>
+                            <input type="text" class="form-control" id="firstname" name="firstname">
+                        </div>
 
-    <label>Avatar:</label>
-    <input type="file" name="avatar"><br>
+                        <!-- Lastname -->
+                        <div class="mb-3">
+                            <label for="lastname" class="form-label">Tên</label>
+                            <input type="text" class="form-control" id="lastname" name="lastname">
+                        </div>
 
-    <button type="submit">Đăng ký</button>
-</form>
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Địa chỉ Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" id="phone" name="phone">
+                        </div>
+
+                        <!-- Date of birth -->
+                        <div class="mb-3">
+                            <label for="dob" class="form-label">Ngày sinh</label>
+                            <input type="date" class="form-control" id="dob" name="dob">
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="mb-3">
+                            <label for="password_confirm" class="form-label">Xác nhận mật khẩu</label>
+                            <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
+                        </div>
+
+                        <!-- Avatar -->
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Ảnh đại diện</label>
+                            <input type="file" class="form-control" id="avatar" name="avatar">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

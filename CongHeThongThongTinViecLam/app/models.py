@@ -2,7 +2,10 @@ from .extensions import  db
 from enum import Enum as RoleEnum
 from sqlalchemy import Column, Integer, String, Enum, Date, ForeignKey, Boolean, Float,UniqueConstraint
 from flask_login import UserMixin
-
+from sqlalchemy.types import Text
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects import postgresql
+from datetime import datetime
 class UserRole(RoleEnum):
     admin = "admin"
     candidate = "candidate"
@@ -13,19 +16,26 @@ class User(UserMixin,db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = Column(String(100), nullable=False)
-    firstname = db.Column(db.String(50))
+    password = Column(String(255), nullable=False)
+    firstname = db.Column(db.String(200))
     lastname = db.Column(db.String(50))
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20))
-    user_type = Column(Enum(UserRole), default=UserRole.candidate)
+    user_type = db.Column(db.String(20), default=UserRole.candidate.value)
     dob = db.Column(db.Date)
     avatar = db.Column(db.String(255))
 
     comments = db.relationship("Comment", backref="user", lazy=True)
     reports = db.relationship("Report", backref="user", lazy=True)
     job_postings = db.relationship("JobPosting", backref="user", lazy=True)
-    applications = db.relationship("JobApplication", backref="user", lazy=True)
+    job_applications = db.relationship("JobApplication", backref="job_application_user", lazy=True)
+
+
+class JobType(db.Model):
+    __tablename__ = "job_type"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(50), unique=True)
+    job_postings = db.relationship("JobPosting", backref="job_type", lazy=True)
 
 
 class Company(db.Model):
@@ -53,7 +63,7 @@ class JobPosting(db.Model):
     job_title = db.Column(db.String(100), nullable=False)
     job_description = db.Column(db.Text)
     benefits = db.Column(db.Text)
-    job_type = db.Column(db.String(50))
+    job_type_id = db.Column(db.Integer, db.ForeignKey("job_type.id"))
     salary_range = db.Column(db.String(50))
     status = db.Column(db.String(20))
     created_date = db.Column(db.Date)
@@ -102,33 +112,27 @@ class Report(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("job_posting.id"))
 
 
+class Templates(db.Model):
+    __tablename__ = "templates"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    background = db.Column(db.String(255), nullable=True)  # URL hoặc path ảnh background
+    layout_json = db.Column(db.JSON, nullable=True)       # layout Gridstack JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class JobApplication(db.Model):
     __tablename__ = "job_application"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    career_objective = db.Column(db.Text)
-    education_history = db.Column(db.Text)
-    experience = db.Column(db.Text)
-    skills = db.Column(db.Text)
-    references = db.Column(db.Text)
-
-
+    cv_data = db.Column(JSON, nullable=False)
+    design = db.Column(JSON, nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    avatar = db.Column(db.String(255), nullable = True)
 
 
-    additional_infos = db.relationship("AdditionalInfo", backref="job_application", lazy=True)
     applications = db.relationship("Application", backref="job_application", lazy=True)
 
 
 
-class AdditionalInfo(db.Model):
-    __tablename__ = "additional_info"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.String(100))
-    content = db.Column(db.Text)
-
-
-    job_application_id = db.Column(db.Integer, db.ForeignKey("job_application.id"))
 
 
 

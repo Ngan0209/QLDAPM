@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo CV{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cv.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="cv-builder row g-0">
+  <!-- LEFT PANEL -->
+  <aside class="col-md-4 cv-config panel" id="leftPanel">
+    <h3>Thiết kế & Cấu hình</h3>
+
+    <div class="control-row">
+      <label class="small">Font</label>
+      <select id="fontFamily" class="form-select">
+        <option value="Arial, Helvetica, sans-serif">Arial</option>
+        <option value="Roboto, sans-serif">Roboto</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="'Times New Roman', Times, serif">Times New Roman</option>
+      </select>
+    </div>
+
+    <div class="control-row">
+      <label class="small">Cỡ chữ (toàn CV)</label>
+      <input id="fontSize" type="range" min="12" max="18" value="14" class="form-range">
+    </div>
+
+    <div class="control-row">
+      <label class="small">Khoảng cách dòng</label>
+      <input id="lineHeight" type="range" min="1" max="2" step="0.1" value="1.45" class="form-range">
+    </div>
+
+    <div class="control-row">
+      <label class="small">Màu chủ đề</label>
+      <input id="themeColor" type="color" value="#1a73e8" class="form-control form-control-color">
+    </div>
+
+    <hr>
+
+    <h3>Ảnh & Header</h3>
+    <div class="control-row">
+      <label class="small">Upload ảnh (avatar)</label>
+      <input id="avatarInput" type="file" accept="image/*" class="form-control">
+    </div>
+    <div class="control-row mt-2">
+      <button class="btn btn-outline-secondary btn-sm w-100" id="toggleEditBtn">🔓 Bật sửa</button>
+    </div>
+
+    <hr>
+
+    <h3>Quản lý mục (Sections)</h3>
+    <div class="small mb-2">Chọn mục để cấu hình</div>
+    <div class="section-list" id="sectionList"></div>
+
+    <div class="mt-2 d-flex gap-2">
+      <select id="addTemplate" class="form-select">
+        <option value="career">Mục tiêu nghề nghiệp</option>
+        <option value="education">Học vấn</option>
+        <option value="experience">Kinh nghiệm</option>
+        <option value="skills">Kỹ năng</option>
+        <option value="certificates">Chứng chỉ</option>
+        <option value="awards">Giải thưởng</option>
+        <option value="references">Người giới thiệu</option>
+        <option value="custom">Mục tùy chỉnh</option>
+      </select>
+      <button id="addSectionBtn" class="btn btn-primary">➕</button>
+    </div>
+
+    <div id="selectedControls" class="mt-3 p-2 border rounded d-none">
+      <div class="small">Cấu hình mục: <span id="selName" class="fw-bold"></span></div>
+      <label class="small">Màu tiêu đề</label>
+      <input type="color" id="selTitleColor" class="form-control form-control-color">
+      <label class="small mt-2">Màu nội dung</label>
+      <input type="color" id="selContentColor" class="form-control form-control-color">
+      <div class="form-check mt-2">
+        <input type="checkbox" class="form-check-input" id="selVisible">
+        <label for="selVisible" class="form-check-label small">Hiển thị</label>
+      </div>
+      <div class="mt-2 d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" id="moveUpBtn">⬆️ Lên</button>
+        <button class="btn btn-outline-secondary btn-sm" id="moveDownBtn">⬇️ Xuống</button>
+        <button class="btn btn-danger btn-sm" id="deleteBtn">🗑️ Xóa</button>
+        
+      </div>
+      <div class="mt-2">
+        <button class="btn btn-success btn-sm w-100" id="addSubItemBtn">➕ Thêm mục con</button>
+      </div>
+      <div id="subItemFormContainer" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px; border-radius:5px;">
+        <h5>Thêm / Sửa mục con</h5>
+        <input type="text" id="subTitle" placeholder="Tiêu đề" class="form-control mb-1" />
+        <input type="text" id="subMeta" placeholder="Thời gian / vị trí" class="form-control mb-1" />
+        <textarea id="subDesc" placeholder="Mô tả chi tiết..." class="form-control mb-1"></textarea>
+        <div class="d-flex justify-content-end gap-2 mt-1">
+          <button id="saveSubItemBtn" class="btn btn-success btn-sm">💾 Lưu</button>
+          <button id="cancelSubItemBtn" class="btn btn-secondary btn-sm">❌ Hủy</button>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-primary btn-sm" id="exportBtn">📤 Export JSON</button>
+      <button class="btn btn-outline-secondary btn-sm" id="saveLocalBtn">💾 Lưu local</button>
+      <button class="btn btn-outline-secondary btn-sm" id="loadLocalBtn">📥 Load local</button>
+    </div>
+
+    <div class="mt-2 text-muted small">
+      Ghi chú: Bấm <strong>🔓 Bật sửa</strong> để chỉnh nội dung trực tiếp. Double-click vào preview cũng bật sửa.
+    </div>
+  </aside>
+
+  <!-- RIGHT PREVIEW -->
+  <main class="col-md-8 cv-preview workspace">
+    <div class="a4" id="preview" style="font-size:14px; line-height:1.45; font-family:Arial, Helvetica, sans-serif;">
+      <!-- Header -->
+      <div class="cv-header d-flex">
+        <div class="avatar me-3" id="avatarBox" title="Double-click để thay ảnh">
+          <img id="avatarImg" src="" alt="" style="display:none;">
+          <div id="avatarPlaceholder">T</div>
+          <div class="edit-photo" onclick="triggerAvatar()">Sửa ảnh</div>
+        </div>
+
+        <div class="person-info">
+          <h1 id="name" contenteditable="false">Tên Người Dùng</h1>
+          <div class="jobtitle" id="jobtitle" contenteditable="false">Vị trí ứng tuyển</div>
+          <div class="contact-list" id="contactList">
+            <div id="dob" contenteditable="false"><strong>Ngày sinh:</strong> DD/MM/YYYY</div>
+            <div id="gender" contenteditable="false"><strong>Giới tính:</strong> Nam/Nữ</div>
+            <div id="phone" contenteditable="false"><strong>Số điện thoại:</strong> 0123 456 789</div>
+            <div id="email" contenteditable="false"><strong>Email:</strong> you@example.com</div>
+            <div id="website" contenteditable="false"><strong>Website:</strong> portfolio.me</div>
+            <div id="address" contenteditable="false"><strong>Địa chỉ:</strong> Quận A, Thành phố</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sectionsContainer"></div>
+    </div>
+  </main>
+</div>
+<pre id="output" class="bg-gray-100 p-2 rounded text-xs overflow-x-auto"></pre>
+<button id="saveServerBtn" class="btn btn-success">💾 Lưu lên server</button>
+
+<input id="hiddenAvatarFile" type="file" accept="image/*" style="display:none">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/cv.js') }}"></script>
+
+{% endblock %}
