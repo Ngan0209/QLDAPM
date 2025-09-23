@@ -177,6 +177,7 @@ class Report(db.Model):
     job_posting = db.relationship("JobPosting", back_populates="reports", lazy="joined")
 
 
+
 class Templates(db.Model):
     __tablename__ = "templates"
 
