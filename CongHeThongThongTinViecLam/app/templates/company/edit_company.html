@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Chỉnh sửa thông tin doanh nghiệp{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h3 class="text-primary mb-4">Chỉnh sửa thông tin doanh nghiệp</h3>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Tên công ty</label>
+            <input class="form-control" name="company_name" value="{{ company.company_name or '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mã số thuế</label>
+            <input class="form-control" name="company_tax_id" value="{{ company.company_tax_id or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Loại hình kinh doanh</label>
+            <input class="form-control" name="business_type" value="{{ company.business_type or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Địa chỉ công ty</label>
+            <input class="form-control" name="company_address" value="{{ company.company_address or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Ngày thành lập</label>
+            <input class="form-control" name="established_date" type="date" value="{{ company.established_date or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Trạng thái kinh doanh</label>
+            <select class="form-select" name="business_status">
+                <option value="1" {% if company.business_status %}selected{% endif %}>Đang hoạt động</option>
+                <option value="0" {% if company.business_status is not none and not company.business_status %}selected{% endif %}>Ngừng hoạt động</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Số điện thoại công ty</label>
+            <input class="form-control" name="phone_contact" value="{{ company.phone_contact or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Người đại diện pháp luật</label>
+            <input class="form-control" name="legal_representative" value="{{ company.legal_representative or '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tỉnh/Thành phố</label>
+            <select class="form-select select2 w-100" name="province_code" id="province" required data-selected="{{ company.province_code or '' }}">
+                <option value="">Chọn tỉnh/thành</option>
+                {% for p in provinces %}
+                    <option value="{{ p.code }}" {% if company.province_code == p.code %}selected{% endif %}>{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="district" class="form-label fw-bold">Quận/Huyện</label>
+            <select class="form-control select2" id="district" name="district_code" required>
+                <option value="">Chọn quận/huyện</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="ward" class="form-label fw-bold">Phường/Xã</label>
+            <select class="form-control select2" id="ward" name="ward_code" required>
+                <option value="">Chọn phường/xã</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+        <a href="{{ url_for('auth.profile_screen') }}" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        const COMPANY_PROVINCE = "{{ company.province_code or '' }}";
+        const COMPANY_DISTRICT = "{{ company.district_code or '' }}";
+        const COMPANY_WARD = "{{ company.ward_code or '' }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/form_location.js') }}"></script>
+{% endblock %}

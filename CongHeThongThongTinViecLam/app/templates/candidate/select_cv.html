@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Chọn CV để ứng tuyển{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">📄 Chọn CV để ứng tuyển</h2>
+
+  {% if cvs %}
+  <div class="row">
+    {% for cv in cvs %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">CV #{{ cv.id }}</h5>
+          {% if cv.cv_data.profile.name %}
+          <p class="mb-1"><strong>{{ cv.cv_data.profile.name }}</strong></p>
+          {% endif %}
+          {% if cv.cv_data.profile.jobtitle %}
+          <p class="text-muted mb-2">{{ cv.cv_data.profile.jobtitle }}</p>
+          {% endif %}
+        </div>
+        <div class="card-footer text-center">
+          <form action="{{ url_for('job.apply', job_id=job_id) }}" method="post">
+            <input type="hidden" name="cv_id" value="{{ cv.id }}">
+            <button type="submit" class="btn btn-primary btn-sm">
+              📩 Ứng tuyển với CV này
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    Bạn chưa có CV nào.
+    <a href="{{ url_for('cv.templates_screen') }}">👉 Tạo CV ngay</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

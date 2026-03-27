@@ -3,6 +3,231 @@
 {% block title %}Trang chủ{% endblock %}
 
 {% block content %}
-<h1>Chào mừng đến hệ thống việc làm</h1>
-<p>Đây là trang chính.</p>
+    <h1>Chào mừng đến hệ thống việc làm</h1>
+
+    <div class="d-flex justify-content-center mt-4">
+        <div class="card shadow-sm" style="width: 600px; border-radius: 10px; overflow: hidden;">
+          <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2500">
+              <div class="carousel-indicators">
+                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"></button>
+              </div>
+              <div class="carousel-inner">
+                <div class="carousel-item active">
+                  <img src="{{ url_for('static', filename='images/img1.jpg') }}" class="d-block w-100" alt="Ảnh 1">
+                </div>
+                <div class="carousel-item">
+                  <img src="{{ url_for('static', filename='images/img2.jpg') }}" class="d-block w-100" alt="Ảnh 2">
+                </div>
+                <div class="carousel-item">
+                  <img src="{{ url_for('static', filename='images/img3.jpg') }}" class="d-block w-100" alt="Ảnh 3">
+                </div>
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              </button>
+          </div>
+        </div>
+    </div>
+
+    <!-- Filter form -->
+    <div class="container mt-5">
+      <form id="searchForm" class="row align-items-end g-3 mb-2" method="get" action="{{ url_for('home.index') }}">
+        <div class="col-md-4">
+          <input type="text" class="form-control" name="q" placeholder="Tìm kiếm vị trí, công ty, mô tả..." value="{{ request.args.get('q', '') }}">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" name="job_type_id">
+            <option value="">-- Tất cả cấp bậc --</option>
+            {% for jt in job_types %}
+              <option value="{{ jt.id }}" {% if request.args.get('job_type_id') == jt.id|string %}selected{% endif %}>{{ jt.type }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" name="salary_filter">
+            <option value="">-- Tất cả mức lương --</option>
+            <option value="lt10" {% if request.args.get('salary_filter')=='lt10' %}selected{% endif %}>Dưới 10 triệu</option>
+            <option value="10-15" {% if request.args.get('salary_filter')=='10-15' %}selected{% endif %}>10 - 15 triệu</option>
+            <option value="15-20" {% if request.args.get('salary_filter')=='15-20' %}selected{% endif %}>15 - 20 triệu</option>
+            <option value="20-30" {% if request.args.get('salary_filter')=='20-30' %}selected{% endif %}>20 - 30 triệu</option>
+            <option value="gt30" {% if request.args.get('salary_filter')=='gt30' %}selected{% endif %}>Trên 30 triệu</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary fw-semibold w-100">
+            <i class="bi bi-search"></i> Tìm kiếm
+          </button>
+        </div>
+        <span id="location-hidden-inputs">
+          {% if request.args.get('province_code') %}
+            <input type="hidden" name="province_code" value="{{ request.args.get('province_code') }}">
+          {% endif %}
+          {% for d in request.args.getlist('district_code') %}
+            <input type="hidden" name="district_code" value="{{ d }}">
+          {% endfor %}
+        </span>
+      </form>
+      <div class="row mt-1 mb-1">
+        <div class="col-12 d-flex justify-content-end">
+          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#locationFilterModal">
+            <i class="bi bi-geo-alt"></i> Lọc theo khu vực
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal filter khu vực -->
+      <div class="modal fade" id="locationFilterModal" tabindex="-1" aria-labelledby="locationFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 14px;">
+            <div class="modal-body">
+              <div class="row">
+                <!-- Cột trái: Tỉnh/thành phố -->
+                <div class="col-5 border-end">
+                  <input type="text" class="form-control mb-2" id="provinceSearch" placeholder="Nhập Tỉnh/Thành phố">
+                  <div class="list-group" id="provinceList" style="max-height:350px;overflow-y:auto;">
+                    <!-- JS render tỉnh/thành ở đây -->
+                  </div>
+                </div>
+                <!-- Cột phải: Quận/Huyện -->
+                <div class="col-7" id="districtPanel" style="display: none;">
+                  <div class="fw-semibold text-secondary mb-2">QUẬN/HUYỆN</div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="selectAllDistrict">
+                    <label class="form-check-label" for="selectAllDistrict">Tất cả</label>
+                  </div>
+                  <div id="districtList" style="max-height:280px;overflow-y:auto;">
+                    <!-- JS render quận/huyện ở đây -->
+                  </div>
+                </div>
+                <!-- Nếu chưa chọn tỉnh, hiện chỉ dẫn ở cột phải -->
+                <div class="col-7 d-flex align-items-center justify-content-center" id="districtEmptyPanel" style="display: flex; min-height: 350px;">
+                  <span class="text-secondary">Vui lòng chọn Tỉnh/Thành phố trước</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-link text-primary" id="clearAll">Bỏ chọn tất cả</button>
+              <button type="button" class="btn btn-primary" id="applyLocation">Áp dụng</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if province_selected %}
+        <div class="mb-2">
+          <h4>Danh sách việc làm tại {{ province_selected.name }}
+          {% if districts_selected %}
+            &gt; {{ districts_selected|map(attribute='name')|join(', ') }}
+          {% endif %}
+          </h4>
+        </div>
+      {% else %}
+        <h4 class="mb-4">Danh sách việc làm</h4>
+      {% endif %}
+      <div class="row g-3">
+        {% if jobs %}
+          {% for job in jobs %}
+            <div class="col-md-6 col-lg-4">
+              <a href="{{ url_for('job.detail', job_id=job.id) }}" class="text-decoration-none">
+                <div class="card mb-3 border">
+                  <div class="card-body">
+                    <h5 class="card-title mb-2 fw-semibold">{{ job.job_title }}</h5>
+                    <p class="mb-1 text-muted">
+                      <i class="bi bi-building me-1"></i>
+                      {{ job.company.company_name if job.company else "Công ty không xác định" }}
+                    </p>
+                    <p class="mb-1 text-muted">
+                      <i class="bi bi-bar-chart me-1"></i>
+                      {{ job.job_type.type if job.job_type else "Chưa rõ cấp bậc" }}
+                      <span class="ms-3">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {% if job.province and job.province.name %}{{ job.province.name }}{% endif %}
+                      </span>
+                    </p>
+                    <p class="mb-1">
+                      <span class="fw-semibold">Mức lương:</span>
+                      {% if job.salary_range %}
+                        <span class="text-muted">{{ job.salary_range }}</span>
+                      {% else %}
+                        <span class="text-muted">Chưa cập nhật</span>
+                      {% endif %}
+                    </p>
+                    <p class="mb-0 text-muted" style="font-size:0.95em;">
+                      <i class="bi bi-calendar-event me-1"></i>
+                      Hạn nộp: {{ job.expiration_date.strftime('%d/%m/%Y') if job.expiration_date else "Không xác định" }}
+                    </p>
+                  </div>
+                </div>
+              </a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="col-12 text-center text-muted py-4">
+            Hiện chưa có tin tuyển dụng nào.
+          </div>
+        {% endif %}
+      </div>
+      {% if pagination and pagination.pages > 0 %}
+        <nav aria-label="Pagination" class="mt-5">
+          <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+              <li class="page-item">
+                <a class="page-link" href="{{ url_for('home.index', page=pagination.prev_num) }}">&laquo;</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for p in range(1, pagination.pages + 1) %}
+              <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('home.index', page=p) }}">{{ p }}</a>
+              </li>
+            {% endfor %}
+            {% if pagination.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="{{ url_for('home.index', page=pagination.next_num) }}">&raquo;</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+      .carousel-item {
+        transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+        height: 250px;
+        object-fit: cover;
+      }
+      #provinceList .active {
+        background: #e9f1fa !important;
+        color: #2563eb !important;
+        font-weight: 600;
+        border-radius: 6px;
+      }
+      #provinceList .bi-check-circle-fill {
+        font-size: 1.1em;
+        margin-left: 8px;
+        vertical-align: -2px;
+      }
+      #districtList .form-check-input:checked ~ .form-check-label {
+        color: #2563eb;
+        font-weight: 500;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+      // Truyền biến sang file JS ngoài
+      window.provincesData = {{ provinces_json|safe }};
+    </script>
+    <script src="{{ url_for('static', filename='js/location.js') }}"></script>
 {% endblock %}

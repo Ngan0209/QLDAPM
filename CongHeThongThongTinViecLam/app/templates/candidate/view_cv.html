@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Xem CV{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Xem CV</h2>
+    <div>
+      {% if current_user.is_authenticated and cv.user_id == current_user.id %}
+        <!-- Nút chỉnh sửa cho chủ sở hữu -->
+        <a href="{{ url_for('cv.edit_cv_screen', cv_id=cv.id) }}" class="btn btn-warning me-2">
+          ✏️ Chỉnh sửa CV
+        </a>
+        <a href="{{ url_for('cv.my_cvs_screen') }}" class="btn btn-outline-secondary me-2">
+          📋 Quay lại danh sách
+        </a>
+      {% elif current_user.is_authenticated and current_user.user_type == 'admin' %}
+        <!-- Nút cho admin -->
+        <a href="{{ url_for('cv.edit_cv_screen', cv_id=cv.id) }}" class="btn btn-warning me-2">
+          ✏️ Chỉnh sửa (Admin)
+        </a>
+      {% endif %}
+      
+      <button onclick="window.print()" class="btn btn-primary">🖨 In / Xuất PDF</button>
+    </div>
+  </div>
+
+  <!-- Thông tin CV -->
+  {% if current_user.is_authenticated and cv.user_id == current_user.id %}
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
+    <div>
+      <strong>CV của bạn</strong> - 
+      Tạo ngày: {{ cv.created_at.strftime('%d/%m/%Y %H:%M') }}
+      {% if cv.updated_at %}
+        - Cập nhật: {{ cv.updated_at.strftime('%d/%m/%Y %H:%M') }}
+      {% endif %}
+    </div>
+    <div class="btn-group">
+      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cvActionsModal">
+        🔧 Tác vụ
+      </button>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="a4"
+       style="font-size: {{ cv.cv_data.design.fontSize }}px;
+              line-height: {{ cv.cv_data.design.lineHeight }};
+              font-family: {{ cv.cv_data.design.fontFamily }};
+              color: #222;">
+
+    <!-- Header -->
+    <div class="cv-header d-flex mb-4">
+      <div class="avatar me-3">
+        {% if cv.avatar %}
+          <img src="{{ cv.avatar }}" alt="Avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+        {% else %}
+          <div class="avatar-placeholder d-flex align-items-center justify-content-center"
+               style="width:80px;height:80px;border-radius:50%;background:#{{ cv.cv_data.design.themeColor|replace('#','') }}20;color:#{{ cv.cv_data.design.themeColor|replace('#','') }};font-size:24px;font-weight:bold;">
+            {{ cv.cv_data.profile.name[0]|upper if cv.cv_data.profile.name else 'CV' }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="person-info flex-grow-1">
+        <h1 style="margin:0 0 5px 0;color:#111;">{{ cv.cv_data.profile.name }}</h1>
+        <div class="jobtitle fw-bold mb-2" style="color:{{ cv.cv_data.design.themeColor }};">{{ cv.cv_data.profile.jobtitle }}</div>
+        
+        <div class="contact-info" style="font-size:13px;line-height:1.4;">
+          {% if cv.cv_data.profile.dob %}<div> {{ cv.cv_data.profile.dob }}</div>{% endif %}
+          {% if cv.cv_data.profile.gender %}<div> {{ cv.cv_data.profile.gender }}</div>{% endif %}
+          {% if cv.cv_data.profile.phone %}<div> {{ cv.cv_data.profile.phone }}</div>{% endif %}
+          {% if cv.cv_data.profile.email %}<div> {{ cv.cv_data.profile.email }}</div>{% endif %}
+          {% if cv.cv_data.profile.website %}<div> {{ cv.cv_data.profile.website }}</div>{% endif %}
+          {% if cv.cv_data.profile.address %}<div> {{ cv.cv_data.profile.address }}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sections với Subitems -->
+    <div id="sectionsContainer">
+      {% for section in cv.cv_data.sections if section.visible %}
+      <div class="section-block mb-4" 
+           style="border-top:2px solid {{ cv.cv_data.design.themeColor }}; padding-top:12px;">
+        
+        <!-- Section Title -->
+        <h4 style="color:{{ section.titleColor }}; margin-bottom:15px; font-size:16px;">
+          {{ section.title }}
+        </h4>
+
+        <!-- Section Content (nếu có) -->
+        {% if section.content and section.content.strip() %}
+        <div class="section-content mb-3" style="color:{{ section.contentColor }};">
+          {{ section.content | safe }}
+        </div>
+        {% endif %}
+
+        <!-- Subitems (nếu có) -->
+        {% if section.subitems and section.subitems|length > 0 %}
+        <div class="subitems-container">
+          {% for subitem in section.subitems %}
+          <div class="subitem mb-3" 
+               style="border-left:3px solid {{ cv.cv_data.design.themeColor }}40; 
+                      margin-left:10px; 
+                      padding-left:15px;">
+            
+            <!-- Subitem Title -->
+            <div class="subitem-title fw-bold mb-1" style="color:#111;">
+              {{ subitem.title }}
+            </div>
+            
+            <!-- Subitem Meta (nếu có) -->
+            {% if subitem.meta and subitem.meta.strip() %}
+            <div class="subitem-meta text-muted small mb-1">
+              {{ subitem.meta }}
+            </div>
+            {% endif %}
+            
+            <!-- Subitem Description (nếu có) -->
+            {% if subitem.desc and subitem.desc.strip() %}
+            <div class="subitem-desc" style="color:#444; line-height:1.5;">
+              {{ subitem.desc | replace('\n', '<br>') | safe }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Placeholder nếu không có nội dung -->
+        {% if not section.content and not section.subitems %}
+        <div class="text-muted fst-italic" style="color:#999;">
+          Chưa có nội dung...
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tác vụ CV -->
+{% if current_user.is_authenticated and cv.user_id == current_user.id %}
+<div class="modal fade" id="cvActionsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tác vụ CV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('cv.edit_cv_screen', cv_id=cv.id) }}" class="btn btn-warning">
+            ✏️ Chỉnh sửa CV
+          </a>
+          <button type="button" class="btn btn-outline-primary" onclick="duplicateCV()">
+            📋 Sao chép CV
+          </button>
+          <button type="button" class="btn btn-outline-info" onclick="downloadJSON()">
+            💾 Tải về JSON
+          </button>
+          <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
+            🗑️ Xóa CV
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+.a4 {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  margin: 20px auto;
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.contact-info div {
+  margin-bottom: 3px;
+}
+
+.section-block {
+  page-break-inside: avoid;
+}
+
+.subitem {
+  page-break-inside: avoid;
+}
+
+/* Ẩn các nút điều khiển khi in */
+@media print {
+  body, html {
+    width: 210mm;
+    height: 297mm;
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  
+  .a4 {
+    margin: 0;
+    padding: 15mm;
+    box-shadow: none;
+    min-height: 277mm;
+    page-break-after: always;
+  }
+  
+  .btn, .mb-4, .py-4, .alert, .modal {
+    display: none !important;
+  }
+  
+  .cv-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+  }
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .a4 {
+    width: 100%;
+    padding: 15px;
+    margin: 10px auto;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+  
+  .cv-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .avatar {
+    margin: 0 auto 15px auto;
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .d-flex.justify-content-between > div {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Style cho alert thông tin */
+.alert-info {
+  border-left: 4px solid #0dcaf0;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user.is_authenticated and cv.user_id == current_user.id %}
+<script>
+// Sao chép CV
+async function duplicateCV() {
+    try {
+        const response = await fetch('{{ url_for("cv.duplicate_cv", cv_id=cv.id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert('CV đã được sao chép thành công!');
+            window.location.href = '{{ url_for("cv.my_cvs_screen") }}';
+        } else {
+            alert('Lỗi: ' + result.error);
+        }
+    } catch (error) {
+        alert('Lỗi kết nối: ' + error.message);
+    }
+}
+
+// Tải về JSON
+function downloadJSON() {
+    const cvData = {{ cv.cv_data | tojson }};
+    const dataStr = JSON.stringify(cvData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = 'cv-data-' + {{ cv.id }} + '.json';
+    link.click();
+}
+
+// Xác nhận xóa CV
+function confirmDelete() {
+    if (confirm('Bạn có chắc muốn xóa CV này? Hành động này không thể hoàn tác.')) {
+        deleteCV();
+    }
+}
+
+// Xóa CV
+async function deleteCV() {
+    try {
+        const response = await fetch('{{ url_for("cv.delete_cv", cv_id=cv.id) }}', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert('CV đã được xóa thành công!');
+            window.location.href = '{{ url_for("cv.my_cvs_screen") }}';
+        } else {
+            alert('Lỗi: ' + result.error);
+        }
+    } catch (error) {
+        alert('Lỗi kết nối: ' + error.message);
+    }
+}
+
+// Đóng modal sau khi thực hiện hành động
+function closeModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('cvActionsModal'));
+    modal.hide();
+}
+
+// Gán sự kiện cho các nút trong modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Đóng modal khi chuyển hướng
+    document.querySelectorAll('#cvActionsModal a').forEach(link => {
+        link.addEventListener('click', closeModal);
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced CV Template Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/gridstack@8.2.0/dist/gridstack.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/3.4.0/css/bootstrap-colorpicker.min.css"
+        rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #4a6cf7;
+            --color-secondary: #6a79f7;
+            --color-background: #ffffff;
+            --color-text: #333333;
+            --color-accent: #f3f4f6;
+            --color-header: #1f2937;
+            --color-border: #e5e7eb;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: var(--color-text);
+        }
+
+        .builder-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .builder-header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: 1px solid var(--color-border);
+        }
+
+        .template-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr 200px;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--color-header);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-secondary);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-info {
+            background: #06b6d4;
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--color-warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .template-builder {
+            display: flex;
+            gap: 20px;
+            min-height: 700px;
+        }
+
+        /* Widget Palette */
+        .widget-palette {
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            border: 1px solid var(--color-border);
+        }
+
+        .palette-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--color-border);
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .palette-header h4 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .palette-content {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .widget-category {
+            margin-bottom: 25px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-header);
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--color-accent);
+        }
+
+        .widget-item {
+            background: white;
+            border: 2px solid var(--color-border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: grab;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .widget-item:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 108, 247, 0.15);
+        }
+
+        .widget-item:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .widget-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .widget-info h6 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-header);
+        }
+
+        .widget-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* A4 Canvas */
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            background: #f1f5f9;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+        }
+
+        .a4-canvas {
+            width: 595px;
+            height: 842px;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+
+        .grid-stack {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+        }
+
+        /* Grid Items với tùy chỉnh nâng cao */
+        .grid-stack-item {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .grid-stack-item-content {
+            background: white;
+            border: 2px dashed var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100%;
+            position: relative;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .grid-stack-item-content:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.15);
+        }
+
+        .widget-content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .widget-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-header);
+        }
+
+        .widget-title i {
+            font-size: 14px;
+            color: var(--color-primary);
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .grid-stack-item:hover .widget-actions {
+            opacity: 1;
+        }
+
+        .widget-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-style {
+            background: var(--color-warning);
+            color: white;
+        }
+
+        .btn-resize {
+            background: var(--color-info);
+            color: white;
+        }
+
+        .btn-remove {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        .widget-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .widget-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Inline editing styles */
+        .editable-text {
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: text;
+            transition: all 0.2s ease;
+            min-height: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .editable-text:hover {
+            background: rgba(74, 108, 247, 0.05);
+            border-color: var(--color-primary);
+        }
+
+        .editable-text:focus {
+            background: white;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.1);
+            outline: none;
+        }
+
+        .editable-list {
+            width: 100%;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .list-item:hover {
+            background: rgba(74, 108, 247, 0.05);
+        }
+
+        .list-item-content {
+            flex: 1;
+        }
+
+        .list-item-actions {
+            opacity: 0;
+            display: flex;
+            gap: 4px;
+            transition: opacity 0.2s ease;
+        }
+
+        .list-item:hover .list-item-actions {
+            opacity: 1;
+        }
+
+        .btn-mini {
+            width: 18px;
+            height: 18px;
+            border: none;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Advanced styling panel */
+        .style-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--color-border);
+        }
+
+        .style-group {
+            margin-bottom: 16px;
+        }
+
+        .style-group h6 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-header);
+        }
+
+        .style-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .color-input {
+            width: 40px;
+            height: 32px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Empty State */
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #9ca3af;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1050;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-primary);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Custom Component Builder */
+        .component-builder {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            background: #f9fafb;
+        }
+
+        .property-row {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+        }
+
+        .property-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-header);
+        }
+
+        .property-input {
+            font-size: 13px;
+            padding: 6px 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+        }
+
+        .btn-remove-property {
+            background: var(--color-danger);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Resize handles */
+        .resize-handle {
+            position: absolute;
+            background: var(--color-primary);
+            border-radius: 2px;
+        }
+
+        .resize-handle.handle-right {
+            right: -3px;
+            top: 50%;
+            width: 6px;
+            height: 20px;
+            transform: translateY(-50%);
+            cursor: e-resize;
+        }
+
+        .resize-handle.handle-bottom {
+            bottom: -3px;
+            left: 50%;
+            width: 20px;
+            height: 6px;
+            transform: translateX(-50%);
+            cursor: s-resize;
+        }
+
+        .resize-handle.handle-corner {
+            bottom: -3px;
+            right: -3px;
+            width: 12px;
+            height: 12px;
+            cursor: se-resize;
+        }
+
+        /* Preview Mode */
+        .preview-mode .widget-palette {
+            display: none !important;
+        }
+
+        .preview-mode .grid-stack-item-content {
+            border-style: solid;
+            cursor: default;
+        }
+
+        .preview-mode .widget-actions {
+            display: none !important;
+        }
+
+        .preview-mode .grid-stack-item-content:hover {
+            border-color: var(--color-border);
+            box-shadow: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .template-builder {
+                flex-direction: column;
+            }
+
+            .widget-palette {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .a4-canvas {
+                width: 100%;
+                max-width: 595px;
+                height: auto;
+                aspect-ratio: 595 / 842;
+            }
+        }
+
+        /* Hide default form fields */
+        .d-none {
+            display: none !important;
+        }
+
+        /* Utility classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-bold {
+            font-weight: 600;
+        }
+
+        .text-muted {
+            color: #6b7280;
+        }
+
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+
+        .mb-3 {
+            margin-bottom: 16px;
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 8px;
+        }
+
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .grid-stack-item.new-item {
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="builder-container">
+        <!-- Header -->
+        <div class="builder-header">
+            <h2>Advanced CV Template Builder</h2>
+            <div class="template-info">
+                <div class="form-group">
+                    <label for="template-name">Tên Template</label>
+                    <input type="text" id="template-name" class="form-control" placeholder="Nhập tên template"
+                        value="My Advanced Template">
+                </div>
+                <div class="form-group">
+                    <label for="template-background">Background URL</label>
+                    <input type="text" id="template-background" class="form-control" placeholder="URL ảnh nền">
+                </div>
+                <div>
+                    <button type="button" class="btn btn-info btn-sm" id="btn-preview">
+                        <i class="ti ti-eye"></i> Preview
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-clear">
+                        <i class="ti ti-trash"></i> Clear All
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-save">
+                        <i class="ti ti-device-floppy"></i> Save Template
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Builder -->
+        <div class="template-builder" id="template-builder">
+            <!-- Widget Palette -->
+            <div class="widget-palette" id="widget-palette">
+                <div class="palette-header">
+                    <h4>CV Components</h4>
+                </div>
+                <div class="palette-content">
+                    <!-- Personal Information -->
+                    <div class="widget-category">
+                        <div class="category-header">
+                            <i class="ti ti-user-circle"></i>
+                            <span>Personal Info</span>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="avatar">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-photo"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Avatar</h6>
+                                    <p>Profile photo</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="name">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-id-badge"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Name & Title</h6>
+                                    <p>Full name and job title</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="contact">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-address-book"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Contact Info</h6>
+                                    <p>Email, phone, address</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="widget-category">
+                        <div class="category-header">
+                            <i class="ti ti-file-text"></i>
+                            <span>Main Content</span>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="experience">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-briefcase"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Work Experience</h6>
+                                    <p>Job history and roles</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="skills">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-tools"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Skills</h6>
+                                    <p>Technical and soft skills</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="education">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-school"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Education</h6>
+                                    <p>Academic background</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget-item" draggable="true" data-widget="custom">
+                            <div class="widget-header">
+                                <div class="widget-icon">
+                                    <i class="ti ti-puzzle"></i>
+                                </div>
+                                <div class="widget-info">
+                                    <h6>Custom Component</h6>
+                                    <p>Build your own widget</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A4 Canvas -->
+            <div class="canvas-container">
+                <div class="a4-canvas">
+                    <div id="grid-container" class="grid-stack">
+                        <div class="empty-state">
+                            <i class="ti ti-drag-drop"></i>
+                            <h5>Start Building Your CV</h5>
+                            <p>Drag and drop components from the left panel to create your CV layout</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="edit-modal-title">Edit Component</h5>
+                <button class="modal-close" id="btn-close-modal">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab active" data-tab="content">Content</button>
+                    <button class="tab" data-tab="style">Style</button>
+                    <button class="tab" data-tab="layout">Layout</button>
+                </div>
+
+                <div class="tab-content active" id="content-tab">
+                    <div id="content-form"></div>
+                </div>
+
+                <div class="tab-content" id="style-tab">
+                    <div class="style-panel">
+                        <div class="style-group">
+                            <h6>Colors</h6>
+                            <div class="style-controls">
+                                <label>Text Color</label>
+                                <input type="color" class="color-input" id="text-color" value="#333333">
+                                <label>Background</label>
+                                <input type="color" class="color-input" id="bg-color" value="#ffffff">
+                                <label>Border Color</label>
+                                <input type="color" class="color-input" id="border-color" value="#e5e7eb">
+                            </div>
+                        </div>
+                        <div class="style-group">
+                            <h6>Typography</h6>
+                            <div class="style-controls">
+                                <label>Font Size</label>
+                                <input type="range" id="font-size" min="8" max="24" value="14">
+                                <label>Font Weight</label>
+                                <select id="font-weight" class="form-control">
+                                    <option value="300">Light</option>
+                                    <option value="400" selected>Normal</option>
+                                    <option value="500">Medium</option>
+                                    <option value="600">Semi Bold</option>
+                                    <option value="700">Bold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="style-group">
+                            <h6>Spacing</h6>
+                            <div class="style-controls">
+                                <label>Padding</label>
+                                <input type="range" id="padding" min="0" max="30" value="12">
+                                <label>Border Radius</label>
+                                <input type="range" id="border-radius" min="0" max="20" value="8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="layout-tab">
+                    <div class="style-group">
+                        <h6>Size & Position</h6>
+                        <div class="style-controls">
+                            <label>Width (Grid Units)</label>
+                            <input type="number" id="widget-width" min="1" max="12" value="6" class="form-control">
+                            <label>Height (Grid Units)</label>
+                            <input type="number" id="widget-height" min="1" max="20" value="4" class="form-control">
+                            <label>X Position</label>
+                            <input type="number" id="widget-x" min="0" max="11" value="0" class="form-control">
+                            <label>Y Position</label>
+                            <input type="number" id="widget-y" min="0" max="50" value="0" class="form-control">
+                        </div>
+                    </div>
+                    <div class="style-group">
+                        <h6>Constraints</h6>
+                        <div class="style-controls">
+                            <label>Min Width</label>
+                            <input type="number" id="min-width" min="1" max="12" value="2" class="form-control">
+                            <label>Min Height</label>
+                            <input type="number" id="min-height" min="1" max="20" value="2" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-edit">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Component Modal -->
+    <div class="modal" id="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Custom Component Builder</h5>
+                <button class="modal-close" id="btn-close-custom">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Component Name</label>
+                    <input type="text" id="custom-name" class="form-control" placeholder="Enter component name">
+                </div>
+                <div class="form-group">
+                    <label>Component Icon (Tabler Icon)</label>
+                    <input type="text" id="custom-icon" class="form-control" placeholder="ti-star" value="ti-star">
+                </div>
+                <div class="component-builder">
+                    <div class="flex items-center justify-between mb-3">
+                        <h6>Properties</h6>
+                        <button type="button" class="btn btn-sm btn-primary" id="btn-add-property">
+                            <i class="ti ti-plus"></i> Add Property
+                        </button>
+                    </div>
+                    <div id="properties-container">
+                        <!-- Dynamic properties will be added here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-custom">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-create-custom">Create Component</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form fields for data storage -->
+    <textarea id="layout_json_field" class="d-none"></textarea>
+    <textarea id="widget_config_field" class="d-none"></textarea>
+    <textarea id="color_scheme_field" class="d-none"></textarea>
+
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@8.2.0/dist/gridstack-all.js"></script>
+    <script>
+        function getTemplateIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+        class AdvancedCVBuilder {
+            constructor() {
+                this.grid = null;
+                this.currentMode = 'edit';
+                this.currentEditingWidget = null;
+                this.widgetCounter = 0;
+                this.widgets = new Map();
+                this.customComponents = new Map();
+
+
+
+                const templateId = getTemplateIdFromURL();
+                print(templateId)
+                if (templateId) {
+                    this.loadTemplate(templateId);
+                } else {
+                    console.error('Template ID not found in URL');
+                }
+
+                this.widgetTemplates = {
+                    avatar: {
+                        icon: 'ti-photo',
+                        title: 'Avatar',
+                        defaultSize: { w: 3, h: 4 },
+                        minSize: { w: 2, h: 3 },
+                        editable: false,
+                        sampleData: {
+                            image_url: 'https://via.placeholder.com/120x160/4a6cf7/ffffff?text=CV',
+                            alt_text: 'Profile Photo',
+                            border_radius: '50%'
+                        }
+                    },
+                    name: {
+                        icon: 'ti-id-badge',
+                        title: 'Name & Title',
+                        defaultSize: { w: 9, h: 2 },
+                        minSize: { w: 4, h: 1 },
+                        editable: true,
+                        sampleData: {
+                            full_name: 'Nguyễn Văn A',
+                            job_title: 'Senior Developer',
+                            name_style: 'font-size: 24px; font-weight: 700; color: #1f2937;',
+                            title_style: 'font-size: 16px; font-weight: 400; color: #6b7280;'
+                        }
+                    },
+                    contact: {
+                        icon: 'ti-address-book',
+                        title: 'Contact Info',
+                        defaultSize: { w: 6, h: 4 },
+                        minSize: { w: 3, h: 3 },
+                        editable: true,
+                        sampleData: {
+                            items: [
+                                { label: 'Email', value: 'email@example.com', icon: 'ti-mail' },
+                                { label: 'Phone', value: '0123 456 789', icon: 'ti-phone' },
+                                { label: 'Address', value: 'TP. Hồ Chí Minh', icon: 'ti-map-pin' },
+                                { label: 'Website', value: 'www.example.com', icon: 'ti-world' }
+                            ]
+                        }
+                    },
+                    experience: {
+                        icon: 'ti-briefcase',
+                        title: 'Work Experience',
+                        defaultSize: { w: 12, h: 8 },
+                        minSize: { w: 6, h: 4 },
+                        editable: true,
+                        sampleData: {
+                            items: [
+                                {
+                                    position: 'Senior Developer',
+                                    company: 'ABC Company',
+                                    period: '01/2022 - Present',
+                                    description: 'Developed and maintained web applications using React and Node.js'
+                                },
+                                {
+                                    position: 'Junior Developer',
+                                    company: 'XYZ Corp',
+                                    period: '06/2020 - 12/2021',
+                                    description: 'Assisted in frontend development and bug fixing'
+                                }
+                            ]
+                        }
+                    },
+                    skills: {
+                        icon: 'ti-tools',
+                        title: 'Skills',
+                        defaultSize: { w: 6, h: 6 },
+                        minSize: { w: 4, h: 4 },
+                        editable: true,
+                        sampleData: {
+                            items: [
+                                { name: 'JavaScript', level: 85 },
+                                { name: 'React', level: 80 },
+                                { name: 'Node.js', level: 75 },
+                                { name: 'Python', level: 70 },
+                                { name: 'SQL', level: 65 }
+                            ]
+                        }
+                    },
+                    education: {
+                        icon: 'ti-school',
+                        title: 'Education',
+                        defaultSize: { w: 12, h: 5 },
+                        minSize: { w: 6, h: 3 },
+                        editable: true,
+                        sampleData: {
+                            items: [
+                                {
+                                    degree: 'Bachelor of Computer Science',
+                                    school: 'ABC University',
+                                    period: '2016 - 2020',
+                                    gpa: 'GPA: 3.8/4.0'
+                                }
+                            ]
+                        }
+                    }
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.initGrid();
+                this.setupEventListeners();
+                this.setupTabs();
+                this.updateEmptyState();
+            }
+
+            initGrid() {
+                const gridOptions = {
+                    cellHeight: 60,
+                    float: true,
+                    column: 12,
+                    margin: 5,
+                    acceptWidgets: this.currentMode === 'edit',
+                    removable: this.currentMode === 'edit',
+                    resizable: {
+                        handles: this.currentMode === 'edit' ? 'e, se, s, sw, w' : ''
+                    }
+                };
+
+                if (this.grid) {
+                    this.grid.destroy(false);
+                }
+
+                this.grid = GridStack.init(gridOptions);
+                this.updateEmptyState();
+
+                this.grid.on('change', () => this.saveToDatabase());
+                this.grid.on('removed', (event, items) => {
+                    items.forEach(item => {
+                        const widgetId = item.el.querySelector('.grid-stack-item-content')?.dataset.widgetId;
+                        if (widgetId) {
+                            this.widgets.delete(widgetId);
+                        }
+                    });
+                    this.saveToDatabase();
+                    this.updateEmptyState();
+                });
+            }
+
+
+            setupEventListeners() {
+                this.setupDragAndDrop();
+
+                // Main buttons
+                document.getElementById('btn-preview')?.addEventListener('click', () => this.togglePreviewMode());
+                document.getElementById('btn-clear')?.addEventListener('click', () => this.clearAll());
+                document.getElementById('btn-save')?.addEventListener('click', () => this.saveTemplate());
+
+                // Modal buttons
+                document.getElementById('btn-close-modal')?.addEventListener('click', () => this.closeEditModal());
+                document.getElementById('btn-cancel-edit')?.addEventListener('click', () => this.closeEditModal());
+                document.getElementById('btn-save-edit')?.addEventListener('click', () => this.saveEditModal());
+
+                // Custom component modal
+                document.getElementById('btn-close-custom')?.addEventListener('click', () => this.closeCustomModal());
+                document.getElementById('btn-cancel-custom')?.addEventListener('click', () => this.closeCustomModal());
+                document.getElementById('btn-create-custom')?.addEventListener('click', () => this.createCustomComponent());
+                document.getElementById('btn-add-property')?.addEventListener('click', () => this.addCustomProperty());
+
+                // Layout controls
+                document.getElementById('widget-width')?.addEventListener('change', (e) => this.updateWidgetLayout('w', e.target.value));
+                document.getElementById('widget-height')?.addEventListener('change', (e) => this.updateWidgetLayout('h', e.target.value));
+                document.getElementById('widget-x')?.addEventListener('change', (e) => this.updateWidgetLayout('x', e.target.value));
+                document.getElementById('widget-y')?.addEventListener('change', (e) => this.updateWidgetLayout('y', e.target.value));
+
+                // Style controls
+                document.getElementById('text-color')?.addEventListener('change', (e) => this.updateWidgetStyle('color', e.target.value));
+                document.getElementById('bg-color')?.addEventListener('change', (e) => this.updateWidgetStyle('backgroundColor', e.target.value));
+                document.getElementById('border-color')?.addEventListener('change', (e) => this.updateWidgetStyle('borderColor', e.target.value));
+                document.getElementById('font-size')?.addEventListener('input', (e) => this.updateWidgetStyle('fontSize', e.target.value + 'px'));
+                document.getElementById('font-weight')?.addEventListener('change', (e) => this.updateWidgetStyle('fontWeight', e.target.value));
+                document.getElementById('padding')?.addEventListener('input', (e) => this.updateWidgetStyle('padding', e.target.value + 'px'));
+                document.getElementById('border-radius')?.addEventListener('input', (e) => this.updateWidgetStyle('borderRadius', e.target.value + 'px'));
+            }
+
+            setupTabs() {
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const targetTab = e.target.dataset.tab;
+
+                        // Update active tab
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                        e.target.classList.add('active');
+                        document.getElementById(targetTab + '-tab').classList.add('active');
+                    });
+                });
+            }
+
+            setupDragAndDrop() {
+                document.querySelectorAll('.widget-item').forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        if (this.currentMode !== 'edit') {
+                            e.preventDefault();
+                            return;
+                        }
+
+                        const widgetType = item.dataset.widget;
+
+                        if (widgetType === 'custom') {
+                            this.openCustomModal();
+                            e.preventDefault();
+                            return;
+                        }
+
+                        const widgetData = this.widgetTemplates[widgetType];
+                        e.dataTransfer.setData('application/json', JSON.stringify({
+                            type: widgetType,
+                            ...widgetData
+                        }));
+                    });
+                });
+
+                const gridEl = document.getElementById('grid-container');
+
+                gridEl.addEventListener('dragover', (e) => {
+                    if (this.currentMode !== 'edit') return;
+                    e.preventDefault();
+                });
+
+                gridEl.addEventListener('drop', (e) => {
+                    if (this.currentMode !== 'edit') return;
+                    e.preventDefault();
+
+                    try {
+                        const data = JSON.parse(e.dataTransfer.getData('application/json'));
+                        this.addWidget(data, e);
+                    } catch (error) {
+                        console.error('Error adding widget:', error);
+                    }
+                });
+            }
+
+            addWidget(widgetData, event) {
+                this.widgetCounter++;
+                const widgetId = `widget-${widgetData.type}-${this.widgetCounter}`;
+
+                // Store widget data with default styles
+                this.widgets.set(widgetId, {
+                    type: widgetData.type,
+                    data: { ...widgetData.sampleData },
+                    styles: {
+                        color: '#333333',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e7eb',
+                        fontSize: '14px',
+                        fontWeight: '400',
+                        padding: '12px',
+                        borderRadius: '8px'
+                    }
+                });
+
+                const widget = {
+                    id: widgetId,
+                    x: 0,
+                    y: 0,
+                    w: widgetData.defaultSize.w,
+                    h: widgetData.defaultSize.h,
+                    minW: widgetData.minSize.w,
+                    minH: widgetData.minSize.h,
+                    content: this.generateWidgetContent(widgetData.type, widgetId)
+                };
+
+                const el = this.grid.addWidget(widget);
+                el.classList.add('new-item');
+                this.setupWidgetEvents(el);
+                this.updateEmptyState();
+                this.saveToDatabase();
+
+                // Remove animation class after animation
+                setTimeout(() => el.classList.remove('new-item'), 300);
+            }
+            generateWidgetContent(type, id) {
+                const widgetData = this.widgets.get(id);
+                if (!widgetData) {
+                    console.error(`Widget data not found for ID: ${id}`);
+                    return `<div class="text-center text-muted">Widget data not found</div>`;
+                }
+
+                const template = this.widgetTemplates[type] || this.customComponents.get(type);
+                if (!template) {
+                    console.error(`Widget template not found for type: ${type}`);
+                    return `<div class="text-center text-muted">Unknown widget type: ${type}</div>`;
+                }
+
+                const data = widgetData.data;
+                const styles = widgetData.styles || {};
+
+                const content = this.renderWidgetContent(type, data);
+
+                return `
+        <div class="grid-stack-item-content" data-widget-type="${type}" data-widget-id="${id}" 
+             style="color: ${styles.color || '#333333'}; 
+                    background-color: ${styles.backgroundColor || '#ffffff'}; 
+                    border-color: ${styles.borderColor || '#e5e7eb'};
+                    font-size: ${styles.fontSize || '14px'};
+                    font-weight: ${styles.fontWeight || '400'};
+                    padding: ${styles.padding || '12px'};
+                    border-radius: ${styles.borderRadius || '8px'};">
+            <div class="widget-content-header">
+                <div class="widget-title">
+                    <i class="${template.icon}"></i>
+                    <span>${template.title}</span>
+                </div>
+            </div>
+            <div class="widget-body">
+                ${content}
+            </div>
+        </div>
+    `;
+            }
+
+
+            renderWidgetContent(type, data) {
+                switch (type) {
+                    case 'avatar':
+                        return `
+                            <div class="text-center">
+                                <div style="width: 80px; height: 100px; background: linear-gradient(135deg, #e5e7eb, #9ca3af); 
+                                           border-radius: ${data.border_radius || '8px'}; margin: 0 auto 8px; 
+                                           display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                                    <i class="ti ti-user"></i>
+                                </div>
+                                <div class="text-muted" style="font-size: 11px;">${data.alt_text}</div>
+                            </div>
+                        `;
+
+                    case 'name':
+                        return `
+                            <div class="text-center">
+                                <div class="editable-text" contenteditable="true" data-field="full_name" 
+                                     style="${data.name_style || 'font-size: 18px; font-weight: 600; margin-bottom: 4px;'}">${data.full_name}</div>
+                                <div class="editable-text" contenteditable="true" data-field="job_title" 
+                                     style="${data.title_style || 'font-size: 14px; color: #6b7280;'}">${data.job_title}</div>
+                            </div>
+                        `;
+
+                    case 'contact':
+                        return `
+                            <div class="editable-list">
+                                ${data.items.map((item, index) => `
+                                    <div class="list-item" data-index="${index}">
+                                        <i class="${item.icon}" style="color: var(--color-primary); width: 16px;"></i>
+                                        <div class="list-item-content">
+                                            <span class="editable-text" contenteditable="true" data-field="value">${item.value}</span>
+                                        </div>
+                                        <div class="list-item-actions">
+                                            <button class="btn-mini btn-danger" onclick="this.parentElement.parentElement.remove()">
+                                                <i class="ti ti-x"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button class="btn btn-sm btn-secondary mt-2" onclick="this.parentElement.insertAdjacentHTML('beforeend', '<div class=\\'list-item\\' data-index=\\'${data.items.length}\\'><i class=\\'ti ti-plus\\' style=\\'color: var(--color-primary); width: 16px;\\'></i><div class=\\'list-item-content\\'><span class=\\'editable-text\\' contenteditable=\\'true\\' data-field=\\'value\\'>New Item</span></div><div class=\\'list-item-actions\\'><button class=\\'btn-mini btn-danger\\' onclick=\\'this.parentElement.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div></div>')">
+                                    <i class="ti ti-plus"></i> Add Item
+                                </button>
+                            </div>
+                        `;
+
+                    case 'experience':
+                        return `
+                            <div class="editable-list">
+                                ${data.items.map((item, index) => `
+                                    <div class="list-item" data-index="${index}" style="flex-direction: column; align-items: flex-start; padding: 12px; margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                        <div class="flex justify-between items-center" style="width: 100%; margin-bottom: 6px;">
+                                            <div class="editable-text text-bold" contenteditable="true" data-field="position" style="font-weight: 600;">${item.position}</div>
+                                            <div class="list-item-actions">
+                                                <button class="btn-mini btn-danger" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                                    <i class="ti ti-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="editable-text" contenteditable="true" data-field="company" style="color: var(--color-primary); font-weight: 500; margin-bottom: 4px;">${item.company}</div>
+                                        <div class="editable-text text-muted" contenteditable="true" data-field="period" style="font-size: 12px; color: #6b7280; margin-bottom: 6px;">${item.period}</div>
+                                        <div class="editable-text" contenteditable="true" data-field="description" style="font-size: 13px; line-height: 1.4;">${item.description}</div>
+                                    </div>
+                                `).join('')}
+                                <button class="btn btn-sm btn-secondary mt-2" onclick="this.parentElement.insertAdjacentHTML('beforeend', '<div class=\\'list-item\\' style=\\'flex-direction: column; align-items: flex-start; padding: 12px; margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 6px;\\'><div class=\\'flex justify-between items-center\\' style=\\'width: 100%; margin-bottom: 6px;\\'><div class=\\'editable-text text-bold\\' contenteditable=\\'true\\' data-field=\\'position\\' style=\\'font-weight: 600;\\'>New Position</div><div class=\\'list-item-actions\\'><button class=\\'btn-mini btn-danger\\' onclick=\\'this.parentElement.parentElement.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div></div><div class=\\'editable-text\\' contenteditable=\\'true\\' data-field=\\'company\\' style=\\'color: var(--color-primary); font-weight: 500; margin-bottom: 4px;\\'>Company</div><div class=\\'editable-text text-muted\\' contenteditable=\\'true\\' data-field=\\'period\\' style=\\'font-size: 12px; color: #6b7280; margin-bottom: 6px;\\'>Period</div><div class=\\'editable-text\\' contenteditable=\\'true\\' data-field=\\'description\\' style=\\'font-size: 13px; line-height: 1.4;\\'>Description</div></div>')">
+                                    <i class="ti ti-plus"></i> Add Experience
+                                </button>
+                            </div>
+                        `;
+
+                    case 'skills':
+                        return `
+                            <div class="editable-list">
+                                ${data.items.map((item, index) => `
+                                    <div class="list-item" data-index="${index}" style="flex-direction: column; margin-bottom: 10px;">
+                                        <div class="flex items-center gap-2" style="width: 100%; margin-bottom: 4px;">
+                                            <span class="editable-text" contenteditable="true" data-field="name" style="font-weight: 500; flex: 1;">${item.name}</span>
+                                            <span class="text-muted" style="font-size: 12px;">${item.level}%</span>
+                                            <button class="btn-mini btn-danger" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                                <i class="ti ti-x"></i>
+                                            </button>
+                                        </div>
+                                        <div style="width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
+                                            <div style="width: ${item.level}%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 3px;"></div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button class="btn btn-sm btn-secondary mt-2" onclick="this.parentElement.insertAdjacentHTML('beforeend', '<div class=\\'list-item\\' style=\\'flex-direction: column; margin-bottom: 10px;\\'><div class=\\'flex items-center gap-2\\' style=\\'width: 100%; margin-bottom: 4px;\\'><span class=\\'editable-text\\' contenteditable=\\'true\\' data-field=\\'name\\' style=\\'font-weight: 500; flex: 1;\\'>New Skill</span><span class=\\'text-muted\\' style=\\'font-size: 12px;\\'>50%</span><button class=\\'btn-mini btn-danger\\' onclick=\\'this.parentElement.parentElement.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div><div style=\\'width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;\\'><div style=\\'width: 50%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 3px;\\'></div></div></div>')">
+                                    <i class="ti ti-plus"></i> Add Skill
+                                </button>
+                            </div>
+                        `;
+
+                    case 'education':
+                        return `
+                            <div class="editable-list">
+                                ${data.items.map((item, index) => `
+                                    <div class="list-item" data-index="${index}" style="flex-direction: column; align-items: flex-start; padding: 12px; margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                        <div class="flex justify-between items-center" style="width: 100%; margin-bottom: 6px;">
+                                            <div class="editable-text text-bold" contenteditable="true" data-field="degree" style="font-weight: 600;">${item.degree}</div>
+                                            <div class="list-item-actions">
+                                                <button class="btn-mini btn-danger" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                                    <i class="ti ti-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="editable-text" contenteditable="true" data-field="school" style="color: var(--color-primary); font-weight: 500; margin-bottom: 4px;">${item.school}</div>
+                                        <div class="flex justify-between items-center" style="width: 100%;">
+                                            <div class="editable-text text-muted" contenteditable="true" data-field="period" style="font-size: 12px; color: #6b7280;">${item.period}</div>
+                                            <div class="editable-text text-muted" contenteditable="true" data-field="gpa" style="font-size: 12px; color: #6b7280;">${item.gpa || ''}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button class="btn btn-sm btn-secondary mt-2" onclick="this.parentElement.insertAdjacentHTML('beforeend', '<div class=\\'list-item\\' style=\\'flex-direction: column; align-items: flex-start; padding: 12px; margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 6px;\\'><div class=\\'flex justify-between items-center\\' style=\\'width: 100%; margin-bottom: 6px;\\'><div class=\\'editable-text text-bold\\' contenteditable=\\'true\\' data-field=\\'degree\\' style=\\'font-weight: 600;\\'>New Degree</div><div class=\\'list-item-actions\\'><button class=\\'btn-mini btn-danger\\' onclick=\\'this.parentElement.parentElement.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div></div><div class=\\'editable-text\\' contenteditable=\\'true\\' data-field=\\'school\\' style=\\'color: var(--color-primary); font-weight: 500; margin-bottom: 4px;\\'>School</div><div class=\\'flex justify-between items-center\\' style=\\'width: 100%;\\'><div class=\\'editable-text text-muted\\' contenteditable=\\'true\\' data-field=\\'period\\' style=\\'font-size: 12px; color: #6b7280;\\'>Period</div><div class=\\'editable-text text-muted\\' contenteditable=\\'true\\' data-field=\\'gpa\\' style=\\'font-size: 12px; color: #6b7280;\\'>GPA</div></div></div>')">
+                                    <i class="ti ti-plus"></i> Add Education
+                                </button>
+                            </div>
+                        `;
+
+                    default:
+                        // Handle custom components
+                        if (this.customComponents.has(type)) {
+                            const customComp = this.customComponents.get(type);
+                            return `
+                                <div class="custom-component">
+                                    <div class="text-center text-muted mb-2">
+                                        <i class="${customComp.icon}" style="font-size: 24px;"></i>
+                                        <div style="font-size: 12px; margin-top: 4px;">${customComp.title}</div>
+                                    </div>
+                                    <div class="editable-list">
+                                        ${Object.entries(data).map(([key, value]) => `
+                                            <div class="list-item" style="margin-bottom: 8px;">
+                                                <strong style="min-width: 60px; font-size: 11px;">${key}:</strong>
+                                                <span class="editable-text" contenteditable="true" data-field="${key}" style="flex: 1; font-size: 12px;">${value}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return `<div class="text-center text-muted">Unknown widget type: ${type}</div>`;
+                }
+            }
+
+            setupWidgetEvents(widgetEl) {
+                // Edit button
+                const editBtn = widgetEl.querySelector('.btn-edit');
+                if (editBtn) {
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.openEditModal(widgetEl);
+                    });
+                }
+
+                // Style button
+                const styleBtn = widgetEl.querySelector('.btn-style');
+                if (styleBtn) {
+                    styleBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.openEditModal(widgetEl, 'style');
+                    });
+                }
+
+                // Resize button
+                const resizeBtn = widgetEl.querySelector('.btn-resize');
+                if (resizeBtn) {
+                    resizeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.openEditModal(widgetEl, 'layout');
+                    });
+                }
+
+                // Remove button
+                const removeBtn = widgetEl.querySelector('.btn-remove');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.removeWidget(widgetEl);
+                    });
+                }
+
+                // Double-click to edit
+                widgetEl.addEventListener('dblclick', () => {
+                    if (this.currentMode === 'edit') {
+                        this.openEditModal(widgetEl);
+                    }
+                });
+
+                // Setup inline editing for editable text elements
+                const editableElements = widgetEl.querySelectorAll('.editable-text');
+                editableElements.forEach(element => {
+                    element.addEventListener('input', (e) => {
+                        this.handleInlineEdit(widgetEl, e.target);
+                    });
+
+                    element.addEventListener('blur', () => {
+                        this.saveToDatabase();
+                    });
+
+                    element.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            e.target.blur();
+                        }
+                    });
+                });
+            }
+
+            handleInlineEdit(widgetEl, element) {
+                const content = widgetEl.querySelector('.grid-stack-item-content');
+                const widgetId = content.dataset.widgetId;
+                const widgetType = content.dataset.widgetType;
+                const field = element.dataset.field;
+                const value = element.textContent || element.innerText;
+
+                const widgetData = this.widgets.get(widgetId);
+                if (widgetData) {
+                    // Handle nested data structures
+                    const listItem = element.closest('.list-item');
+                    if (listItem) {
+                        const index = parseInt(listItem.dataset.index);
+                        if (!isNaN(index) && widgetData.data.items && widgetData.data.items[index]) {
+                            widgetData.data.items[index][field] = value;
+                        }
+                    } else {
+                        // Direct field update
+                        widgetData.data[field] = value;
+                    }
+
+                    this.widgets.set(widgetId, widgetData);
+                }
+            }
+
+            removeWidget(widgetEl) {
+                if (confirm('Are you sure you want to remove this widget?')) {
+                    const widgetId = widgetEl.querySelector('.grid-stack-item-content').dataset.widgetId;
+                    this.widgets.delete(widgetId);
+                    this.grid.removeWidget(widgetEl);
+                }
+            }
+
+            openEditModal(widgetEl, activeTab = 'content') {
+                const content = widgetEl.querySelector('.grid-stack-item-content');
+                const widgetType = content.dataset.widgetType;
+                const widgetId = content.dataset.widgetId;
+                const template = this.widgetTemplates[widgetType] || this.customComponents.get(widgetType);
+                const widgetData = this.widgets.get(widgetId);
+
+                this.currentEditingWidget = {
+                    el: widgetEl,
+                    type: widgetType,
+                    id: widgetId,
+                    node: this.grid.engine.nodes.find(n => n.el === widgetEl)
+                };
+
+                document.getElementById('edit-modal-title').textContent = `Edit ${template.title}`;
+
+                // Populate form data
+                this.populateEditForm(widgetType, widgetData);
+                this.populateStyleControls(widgetData.styles || {});
+                this.populateLayoutControls(this.currentEditingWidget.node);
+
+                // Set active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                document.querySelector(`[data-tab="${activeTab}"]`).classList.add('active');
+                document.getElementById(activeTab + '-tab').classList.add('active');
+
+                document.getElementById('edit-modal').classList.add('show');
+            }
+
+            populateEditForm(widgetType, widgetData) {
+                const contentForm = document.getElementById('content-form');
+                const data = widgetData.data;
+
+                switch (widgetType) {
+                    case 'name':
+                        contentForm.innerHTML = `
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" class="form-control" data-field="full_name" value="${data.full_name || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Job Title</label>
+                                <input type="text" class="form-control" data-field="job_title" value="${data.job_title || ''}">
+                            </div>
+                        `;
+                        break;
+
+                    case 'contact':
+                        contentForm.innerHTML = `
+                            <div class="form-group">
+                                <label>Contact Items</label>
+                                <div id="contact-items">
+                                    ${data.items.map((item, index) => `
+                                        <div class="property-row">
+                                            <input type="text" class="property-input" value="${item.label}" data-field="label" data-index="${index}">
+                                            <input type="text" class="property-input" value="${item.value}" data-field="value" data-index="${index}">
+                                            <button type="button" class="btn-remove-property" onclick="this.parentElement.remove()">
+                                                <i class="ti ti-x"></i>
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('contact-items').insertAdjacentHTML('beforeend', '<div class=\\'property-row\\'><input type=\\'text\\' class=\\'property-input\\' value=\\'Label\\' data-field=\\'label\\'><input type=\\'text\\' class=\\'property-input\\' value=\\'Value\\' data-field=\\'value\\'><button type=\\'button\\' class=\\'btn-remove-property\\' onclick=\\'this.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div>')">
+                                    <i class="ti ti-plus"></i> Add Item
+                                </button>
+                            </div>
+                        `;
+                        break;
+
+                    case 'skills':
+                        contentForm.innerHTML = `
+                            <div class="form-group">
+                                <label>Skills</label>
+                                <div id="skills-items">
+                                    ${data.items.map((item, index) => `
+                                        <div class="property-row">
+                                            <input type="text" class="property-input" value="${item.name}" data-field="name" data-index="${index}">
+                                            <input type="number" class="property-input" value="${item.level}" min="0" max="100" data-field="level" data-index="${index}">
+                                            <button type="button" class="btn-remove-property" onclick="this.parentElement.remove()">
+                                                <i class="ti ti-x"></i>
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('skills-items').insertAdjacentHTML('beforeend', '<div class=\\'property-row\\'><input type=\\'text\\' class=\\'property-input\\' value=\\'Skill Name\\' data-field=\\'name\\'><input type=\\'number\\' class=\\'property-input\\' value=\\'50\\' min=\\'0\\' max=\\'100\\' data-field=\\'level\\'><button type=\\'button\\' class=\\'btn-remove-property\\' onclick=\\'this.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div>')">
+                                    <i class="ti ti-plus"></i> Add Skill
+                                </button>
+                            </div>
+                        `;
+                        break;
+
+                    default:
+                        if (this.customComponents.has(widgetType)) {
+                            const properties = Object.entries(data).map(([key, value]) => `
+                                <div class="property-row">
+                                    <span class="property-label">${key}</span>
+                                    <input type="text" class="property-input" value="${value}" data-field="${key}">
+                                    <button type="button" class="btn-remove-property" onclick="this.parentElement.remove()">
+                                        <i class="ti ti-x"></i>
+                                    </button>
+                                </div>
+                            `).join('');
+
+                            contentForm.innerHTML = `
+                                <div class="form-group">
+                                    <label>Custom Properties</label>
+                                    <div class="component-builder">
+                                        <div id="custom-properties">${properties}</div>
+                                        <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="document.getElementById('custom-properties').insertAdjacentHTML('beforeend', '<div class=\\'property-row\\'><span class=\\'property-label\\'>New Property</span><input type=\\'text\\' class=\\'property-input\\' value=\\'Value\\' data-field=\\'new_property\\'><button type=\\'button\\' class=\\'btn-remove-property\\' onclick=\\'this.parentElement.remove()\\'><i class=\\'ti ti-x\\'></i></button></div>')">
+                                            <i class="ti ti-plus"></i> Add Property
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            contentForm.innerHTML = `<p class="text-muted">No content editing available for this widget type.</p>`;
+                        }
+                        break;
+                }
+            }
+
+            populateStyleControls(styles) {
+                document.getElementById('text-color').value = styles.color || '#333333';
+                document.getElementById('bg-color').value = styles.backgroundColor || '#ffffff';
+                document.getElementById('border-color').value = styles.borderColor || '#e5e7eb';
+                document.getElementById('font-size').value = parseInt(styles.fontSize) || 14;
+                document.getElementById('font-weight').value = styles.fontWeight || '400';
+                document.getElementById('padding').value = parseInt(styles.padding) || 12;
+                document.getElementById('border-radius').value = parseInt(styles.borderRadius) || 8;
+            }
+
+            populateLayoutControls(node) {
+                if (node) {
+                    document.getElementById('widget-width').value = node.w;
+                    document.getElementById('widget-height').value = node.h;
+                    document.getElementById('widget-x').value = node.x;
+                    document.getElementById('widget-y').value = node.y;
+                    document.getElementById('min-width').value = node.minW || 1;
+                    document.getElementById('min-height').value = node.minH || 1;
+                }
+            }
+
+            updateWidgetLayout(property, value) {
+                if (!this.currentEditingWidget) return;
+
+                const { el, node } = this.currentEditingWidget;
+                const updates = {};
+                updates[property] = parseInt(value);
+
+                this.grid.update(el, updates);
+                this.saveToDatabase();
+            }
+
+            updateWidgetStyle(property, value) {
+                if (!this.currentEditingWidget) return;
+
+                const { id } = this.currentEditingWidget;
+                const widgetData = this.widgets.get(id);
+
+                if (widgetData) {
+                    if (!widgetData.styles) widgetData.styles = {};
+                    widgetData.styles[property] = value;
+                    this.widgets.set(id, widgetData);
+
+                    // Apply style immediately
+                    const content = this.currentEditingWidget.el.querySelector('.grid-stack-item-content');
+                    content.style[property] = value;
+                }
+            }
+
+            closeEditModal() {
+                document.getElementById('edit-modal').classList.remove('show');
+                this.currentEditingWidget = null;
+            }
+
+            saveEditModal() {
+                if (!this.currentEditingWidget) return;
+
+                const { el, type, id } = this.currentEditingWidget;
+                const contentForm = document.getElementById('content-form');
+
+                // Extract form data based on widget type
+                const newData = this.extractFormData(type, contentForm);
+
+                // Update widget data
+                const widgetData = this.widgets.get(id);
+                if (widgetData) {
+                    widgetData.data = { ...widgetData.data, ...newData };
+                    this.widgets.set(id, widgetData);
+
+                    // Regenerate widget content
+                    const newContent = this.generateWidgetContent(type, id);
+                    el.querySelector('.grid-stack-item-content').outerHTML = newContent;
+
+                    // Re-setup events
+                    this.setupWidgetEvents(el);
+                }
+
+                this.closeEditModal();
+                this.saveToDatabase();
+            }
+
+            extractFormData(type, form) {
+                const data = {};
+
+                switch (type) {
+                    case 'name':
+                        form.querySelectorAll('[data-field]').forEach(input => {
+                            data[input.dataset.field] = input.value;
+                        });
+                        break;
+
+                    case 'contact':
+                        data.items = [];
+                        form.querySelectorAll('#contact-items .property-row').forEach(row => {
+                            const item = { icon: 'ti-mail' };
+                            row.querySelectorAll('[data-field]').forEach(input => {
+                                item[input.dataset.field] = input.value;
+                            });
+                            data.items.push(item);
+                        });
+                        break;
+
+                    case 'skills':
+                        data.items = [];
+                        form.querySelectorAll('#skills-items .property-row').forEach(row => {
+                            const item = {};
+                            row.querySelectorAll('[data-field]').forEach(input => {
+                                const value = input.type === 'number' ? parseInt(input.value) : input.value;
+                                item[input.dataset.field] = value;
+                            });
+                            data.items.push(item);
+                        });
+                        break;
+
+                    default:
+                        // Handle custom components
+                        form.querySelectorAll('[data-field]').forEach(input => {
+                            data[input.dataset.field] = input.value;
+                        });
+                        break;
+                }
+
+                return data;
+            }
+
+            // Custom component functionality
+            openCustomModal() {
+                document.getElementById('custom-modal').classList.add('show');
+                this.setupCustomProperties();
+            }
+
+            closeCustomModal() {
+                document.getElementById('custom-modal').classList.remove('show');
+                document.getElementById('custom-name').value = '';
+                document.getElementById('custom-icon').value = 'ti-star';
+                document.getElementById('properties-container').innerHTML = '';
+            }
+
+            setupCustomProperties() {
+                // Add default properties
+                const container = document.getElementById('properties-container');
+                container.innerHTML = `
+                    <div class="property-row">
+                        <input type="text" class="property-input" value="title" placeholder="Property name">
+                        <input type="text" class="property-input" value="Sample Title" placeholder="Default value">
+                        <button type="button" class="btn-remove-property" onclick="this.parentElement.remove()">
+                            <i class="ti ti-x"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            addCustomProperty() {
+                const container = document.getElementById('properties-container');
+                const newProperty = document.createElement('div');
+                newProperty.className = 'property-row';
+                newProperty.innerHTML = `
+                    <input type="text" class="property-input" placeholder="Property name">
+                    <input type="text" class="property-input" placeholder="Default value">
+                    <button type="button" class="btn-remove-property" onclick="this.parentElement.remove()">
+                        <i class="ti ti-x"></i>
+                    </button>
+                `;
+                container.appendChild(newProperty);
+            }
+
+            createCustomComponent() {
+                const name = document.getElementById('custom-name').value.trim();
+                const icon = document.getElementById('custom-icon').value.trim();
+
+                if (!name) {
+                    alert('Please enter a component name');
+                    return;
+                }
+
+                // Extract properties
+                const properties = {};
+                document.querySelectorAll('#properties-container .property-row').forEach(row => {
+                    const inputs = row.querySelectorAll('.property-input');
+                    const key = inputs[0].value.trim();
+                    const value = inputs[1].value.trim();
+                    if (key) {
+                        properties[key] = value;
+                    }
+                });
+
+                if (Object.keys(properties).length === 0) {
+                    alert('Please add at least one property');
+                    return;
+                }
+
+                // Create custom component template
+                const customType = `custom_${Date.now()}`;
+                const customTemplate = {
+                    icon: icon.startsWith('ti-') ? icon : 'ti-' + icon,
+                    title: name,
+                    defaultSize: { w: 6, h: 4 },
+                    minSize: { w: 3, h: 2 },
+                    editable: true,
+                    sampleData: properties
+                };
+
+                this.customComponents.set(customType, customTemplate);
+                this.widgetTemplates[customType] = customTemplate;
+
+                // Add widget to canvas
+                this.addWidget({ type: customType, ...customTemplate });
+
+                this.closeCustomModal();
+            }
+
+            // Layout and display methods
+            togglePreviewMode() {
+                this.currentMode = this.currentMode === 'edit' ? 'preview' : 'edit';
+
+                const builder = document.getElementById('template-builder');
+                const previewBtn = document.getElementById('btn-preview');
+
+                if (this.currentMode === 'preview') {
+                    builder.classList.add('preview-mode');
+                    previewBtn.innerHTML = '<i class="ti ti-edit"></i> Edit Mode';
+                    previewBtn.className = 'btn btn-secondary btn-sm';
+                } else {
+                    builder.classList.remove('preview-mode');
+                    previewBtn.innerHTML = '<i class="ti ti-eye"></i> Preview';
+                    previewBtn.className = 'btn btn-info btn-sm';
+                }
+
+                this.initGrid();
+                this.loadWidgetsToGrid();
+            }
+
+            loadWidgetsToGrid() {
+                this.widgets.forEach((widgetData, widgetId) => {
+                    const template = this.widgetTemplates[widgetData.type] || this.customComponents.get(widgetData.type);
+                    if (!template) return;
+
+                    const widget = {
+                        id: widgetId,
+                        w: template.defaultSize.w,
+                        h: template.defaultSize.h,
+                        minW: template.minSize.w,
+                        minH: template.minSize.h,
+                        content: this.generateWidgetContent(widgetData.type, widgetId)
+                    };
+
+                    const el = this.grid.addWidget(widget);
+                    this.setupWidgetEvents(el);
+                });
+
+                this.updateEmptyState();
+            }
+
+
+            updateEmptyState() {
+                const emptyState = document.querySelector('.empty-state');
+                const hasWidgets = this.grid.engine.nodes.length > 0;
+                if (emptyState) {
+                    emptyState.style.display = hasWidgets ? 'none' : 'block';
+                }
+            }
+
+            clearAll() {
+                if (confirm('Are you sure you want to clear all widgets? This action cannot be undone.')) {
+                    this.widgets.clear();
+                    this.grid.removeAll();
+                    this.updateEmptyState();
+                    this.saveToDatabase();
+                }
+            }
+
+            saveToDatabase() {
+                // Generate layout data
+                const layout = this.grid.engine.nodes.map(node => ({
+                    id: node.el.querySelector('.grid-stack-item-content').dataset.widgetId,
+                    type: node.el.querySelector('.grid-stack-item-content').dataset.widgetType,
+                    x: node.x,
+                    y: node.y,
+                    w: node.w,
+                    h: node.h,
+                    minW: node.minW,
+                    minH: node.minH
+                }));
+
+                // Generate widget config
+                const widgetConfig = {};
+                this.widgets.forEach((widgetData, widgetId) => {
+                    widgetConfig[widgetId] = widgetData;
+                });
+
+                // Generate color scheme
+                const colorScheme = {
+                    primary: getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim(),
+                    secondary: getComputedStyle(document.documentElement).getPropertyValue('--color-secondary').trim(),
+                    background: getComputedStyle(document.documentElement).getPropertyValue('--color-background').trim(),
+                    text: getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim(),
+                    accent: getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+                    header: getComputedStyle(document.documentElement).getPropertyValue('--color-header').trim(),
+                    border: getComputedStyle(document.documentElement).getPropertyValue('--color-border').trim()
+                };
+
+                // Save to hidden fields
+                document.getElementById('layout_json_field').value = JSON.stringify(layout, null, 2);
+                document.getElementById('widget_config_field').value = JSON.stringify(widgetConfig, null, 2);
+                document.getElementById('color_scheme_field').value = JSON.stringify(colorScheme, null, 2);
+
+                console.log('Template data saved:', {
+                    layout: layout.length + ' items',
+                    widgets: Object.keys(widgetConfig).length + ' widgets',
+                    customComponents: this.customComponents.size + ' custom'
+                });
+            }
+            saveTemplate() {
+                const templateName = document.getElementById('template-name').value.trim();
+                const background = document.getElementById('template-background').value.trim();
+
+                if (!templateName) {
+                    alert('Please enter a template name');
+                    return;
+                }
+
+                // Lưu dữ liệu vào các trường ẩn
+                this.saveToDatabase();
+
+                const templateData = {
+                    name: templateName,
+                    background: background,
+                    layout_json: document.getElementById('layout_json_field').value,
+                    widget_config: document.getElementById('widget_config_field').value,
+                    color_scheme: document.getElementById('color_scheme_field').value
+                };
+
+                console.log('Saving template:', templateData);
+
+                fetch('/admin/template/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(templateData)
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Template saved successfully!');
+                        } else {
+                            response.json().then(data => {
+                                alert(`Failed to save template: ${data.error}`);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving template:', error);
+                        alert('An error occurred while saving the template.');
+                    });
+            }
+
+            // syncTemplate() {
+            //     const templateId = getTemplateIdFromURL();
+            //     if (templateId) {
+            //         console.log('Syncing template...');
+            //         this.loadTemplate(templateId);
+            //     }
+            // }
+            // setupAutoSave() {
+            //     let saveTimeout;
+
+            //     const autoSave = () => {
+            //         clearTimeout(saveTimeout);
+            //         saveTimeout = setTimeout(() => {
+            //             this.saveToDatabase();
+            //         }, 2000); // Auto-save after 2 seconds of inactivity
+            //     };
+
+            //     // Auto-save on various events
+            //     this.grid.on('change', autoSave);
+            //     this.grid.on('added', autoSave);
+            //     this.grid.on('removed', autoSave);
+
+            //     document.addEventListener('input', autoSave);
+
+            //     // Auto-save before page unload
+            //     window.addEventListener('beforeunload', () => {
+            //         this.saveToDatabase();
+            //     });
+
+            //     // Auto-sync every 30 seconds
+            //     setInterval(() => {
+            //         this.syncTemplate();
+            //     }, 30000);
+            // }
+
+            debugTemplate() {
+                console.group('Template Debug Info');
+                console.log('Widgets:', this.widgets);
+                console.log('Custom Components:', this.customComponents);
+                console.log('Grid Nodes:', this.grid.engine.nodes);
+                console.log('Current Mode:', this.currentMode);
+
+                const layoutData = document.getElementById('layout_json_field').value;
+                const configData = document.getElementById('widget_config_field').value;
+                const colorData = document.getElementById('color_scheme_field').value;
+
+                console.log('Saved Layout JSON:', layoutData);
+                console.log('Saved Widget Config:', configData);
+                console.log('Saved Color Scheme:', colorData);
+                console.groupEnd();
+            }
+
+            loadTemplate(templateId) {
+                console.log('Loading template with ID:', templateId);
+                fetch(`/admin/template/${templateId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to load template: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Loaded template:', data);
+
+                        // Parse layout_json, widget_config, và color_scheme
+                        const layoutJson = JSON.parse(data.layout_json || '[]');
+                        const widgetConfig = JSON.parse(data.widget_config || '{}');
+                        const colorScheme = JSON.parse(data.color_scheme || '{}');
+
+                        // Cập nhật dữ liệu vào các trường ẩn
+                        document.getElementById('layout_json_field').value = JSON.stringify(layoutJson, null, 2);
+                        document.getElementById('widget_config_field').value = JSON.stringify(widgetConfig, null, 2);
+                        document.getElementById('color_scheme_field').value = JSON.stringify(colorScheme, null, 2);
+
+                        // Cập nhật giao diện
+                        this.widgets.clear();
+                        Object.entries(widgetConfig).forEach(([widgetId, widgetData]) => {
+                            this.widgets.set(widgetId, widgetData);
+                        });
+
+                        this.grid.removeAll();
+                        layoutJson.forEach(node => {
+                            const widget = {
+                                id: node.id,
+                                x: node.x,
+                                y: node.y,
+                                w: node.w,
+                                h: node.h,
+                                minW: node.minW,
+                                minH: node.minH,
+                                content: this.generateWidgetContent(node.type, node.id)
+                            };
+                            const el = this.grid.addWidget(widget);
+                            this.setupWidgetEvents(el);
+                        });
+
+                        // Cập nhật màu sắc
+                        document.documentElement.style.setProperty('--color-primary', colorScheme.primary || '#4a6cf7');
+                        document.documentElement.style.setProperty('--color-secondary', colorScheme.secondary || '#6a79f7');
+                        document.documentElement.style.setProperty('--color-background', colorScheme.background || '#ffffff');
+                        document.documentElement.style.setProperty('--color-text', colorScheme.text || '#333333');
+                        document.documentElement.style.setProperty('--color-accent', colorScheme.accent || '#f3f4f6');
+                        document.documentElement.style.setProperty('--color-header', colorScheme.header || '#1f2937');
+                        document.documentElement.style.setProperty('--color-border', colorScheme.border || '#e5e7eb');
+
+                        alert('Template loaded successfully!');
+                    })
+                    .catch(error => {
+                        console.error('Error loading template:', error);
+                        alert('Failed to load template. Please try again.');
+                    });
+            }
+            // createSampleTemplate() {
+            //     const sampleData = {
+            //         name: "Professional CV Template",
+            //         background: "",
+            //         layout_json: JSON.stringify([
+            //             { id: "widget-name-1", type: "name", x: 0, y: 0, w: 8, h: 2, minW: 4, minH: 1 },
+            //             { id: "widget-avatar-1", type: "avatar", x: 8, y: 0, w: 4, h: 4, minW: 2, minH: 3 },
+            //             { id: "widget-contact-1", type: "contact", x: 0, y: 2, w: 8, h: 4, minW: 3, minH: 3 },
+            //             { id: "widget-experience-1", type: "experience", x: 0, y: 6, w: 7, h: 8, minW: 6, minH: 4 },
+            //             { id: "widget-skills-1", type: "skills", x: 7, y: 6, w: 5, h: 6, minW: 4, minH: 4 },
+            //             { id: "widget-education-1", type: "education", x: 7, y: 12, w: 5, h: 5, minW: 4, minH: 3 }
+            //         ]),
+            //         widget_config: JSON.stringify({
+            //             "widget-name-1": {
+            //                 type: "name",
+            //                 data: {
+            //                     full_name: "Nguyễn Văn A",
+            //                     job_title: "Full Stack Developer",
+            //                     name_style: "font-size: 24px; font-weight: 700; color: #1f2937;",
+            //                     title_style: "font-size: 16px; font-weight: 400; color: #6b7280;"
+            //                 },
+            //                 styles: {
+            //                     color: "#1f2937",
+            //                     backgroundColor: "#ffffff",
+            //                     borderColor: "#e5e7eb",
+            //                     fontSize: "16px",
+            //                     fontWeight: "500",
+            //                     padding: "16px",
+            //                     borderRadius: "8px"
+            //                 }
+            //             },
+            //             "widget-avatar-1": {
+            //                 type: "avatar",
+            //                 data: {
+            //                     image_url: "https://via.placeholder.com/120x160/4a6cf7/ffffff?text=CV",
+            //                     alt_text: "Profile Photo",
+            //                     border_radius: "8px"
+            //                 },
+            //                 styles: {
+            //                     backgroundColor: "#ffffff",
+            //                     borderColor: "#e5e7eb",
+            //                     padding: "12px",
+            //                     borderRadius: "8px"
+            //                 }
+            //             },
+            //             "widget-contact-1": {
+            //                 type: "contact",
+            //                 data: {
+            //                     items: [
+            //                         { label: "Email", value: "nguyenvana@email.com", icon: "ti-mail" },
+            //                         { label: "Phone", value: "+84 123 456 789", icon: "ti-phone" },
+            //                         { label: "Address", value: "TP. Hồ Chí Minh, Việt Nam", icon: "ti-map-pin" },
+            //                         { label: "LinkedIn", value: "linkedin.com/in/nguyenvana", icon: "ti-brand-linkedin" }
+            //                     ]
+            //                 },
+            //                 styles: {
+            //                     color: "#333333",
+            //                     backgroundColor: "#f9fafb",
+            //                     borderColor: "#e5e7eb",
+            //                     fontSize: "14px",
+            //                     padding: "16px",
+            //                     borderRadius: "8px"
+            //                 }
+            //             },
+            //             "widget-experience-1": {
+            //                 type: "experience",
+            //                 data: {
+            //                     items: [
+            //                         {
+            //                             position: "Senior Full Stack Developer",
+            //                             company: "TechCorp Vietnam",
+            //                             period: "01/2022 - Present",
+            //                             description: "Lead development of web applications using React, Node.js, and PostgreSQL. Managed a team of 4 developers and improved system performance by 40%."
+            //                         },
+            //                         {
+            //                             position: "Junior Developer",
+            //                             company: "StartupXYZ",
+            //                             period: "06/2020 - 12/2021",
+            //                             description: "Developed responsive web interfaces and RESTful APIs. Collaborated with designers to implement pixel-perfect UI components."
+            //                         }
+            //                     ]
+            //                 },
+            //                 styles: {
+            //                     color: "#333333",
+            //                     backgroundColor: "#ffffff",
+            //                     borderColor: "#e5e7eb",
+            //                     fontSize: "14px",
+            //                     padding: "16px",
+            //                     borderRadius: "8px"
+            //                 }
+            //             },
+            //             "widget-skills-1": {
+            //                 type: "skills",
+            //                 data: {
+            //                     items: [
+            //                         { name: "JavaScript", level: 90 },
+            //                         { name: "React.js", level: 85 },
+            //                         { name: "Node.js", level: 80 },
+            //                         { name: "Python", level: 75 },
+            //                         { name: "PostgreSQL", level: 70 },
+            //                         { name: "Docker", level: 65 }
+            //                     ]
+            //                 },
+            //                 styles: {
+            //                     color: "#333333",
+            //                     backgroundColor: "#ffffff",
+            //                     borderColor: "#e5e7eb",
+            //                     fontSize: "14px",
+            //                     padding: "16px",
+            //                     borderRadius: "8px"
+            //                 }
+            //             },
+            //             "widget-education-1": {
+            //                 type: "education",
+            //                 data: {
+            //                     items: [
+            //                         {
+            //                             degree: "Bachelor of Computer Science",
+            //                             school: "Đại học Bách Khoa TP.HCM",
+            //                             period: "2016 - 2020",
+            //                             gpa: "GPA: 3.8/4.0"
+            //                         }
+            //                     ]
+            //                 },
+            //                 styles: {
+            //                     color: "#333333",
+            //                     backgroundColor: "#ffffff",
+            //                     borderColor: "#e5e7eb",
+            //                     fontSize: "14px",
+            //                     padding: "16px",
+            //                     borderRadius: "8px"
+            //                 }
+            //             }
+            //         }),
+            //         color_scheme: JSON.stringify({
+            //             primary: "#4a6cf7",
+            //             secondary: "#6a79f7",
+            //             background: "#ffffff",
+            //             text: "#333333",
+            //             accent: "#f3f4f6",
+            //             header: "#1f2937",
+            //             border: "#e5e7eb"
+            //         })
+            //     };
+
+            //     this.loadTemplate(sampleData);
+            // }
+
+        }
+
+        // Initialize the builder when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const builder = new AdvancedCVBuilder();
+
+            // Make it globally available for debugging
+            window.cvBuilder = builder;
+            window.debugTemplate = () => builder.debugTemplate();
+
+            // Load sample template for demonstration
+            // setTimeout(() => {
+            //     builder.createSampleTemplate();
+            // }, 500);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Save shortcut (Ctrl/Cmd + S)
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    builder.saveTemplate();
+                }
+
+                // Preview shortcut (Ctrl/Cmd + P)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                    e.preventDefault();
+                    builder.togglePreviewMode();
+                }
+
+                // Clear shortcut (Ctrl/Cmd + Delete)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Delete') {
+                    e.preventDefault();
+                    builder.clearAll();
+                }
+
+                // Escape to close modals
+                if (e.key === 'Escape') {
+                    builder.closeEditModal();
+                    builder.closeCustomModal();
+                }
+            });
+
+            console.log('🚀 Advanced CV Template Builder initialized');
+            console.log('📋 Available commands:');
+            console.log('  - window.cvBuilder: Access builder instance');
+            console.log('  - window.debugTemplate(): Debug current template');
+            console.log('⌨️  Keyboard shortcuts:');
+            console.log('  - Ctrl/Cmd + S: Save template');
+            console.log('  - Ctrl/Cmd + P: Toggle preview mode');
+            console.log('  - Ctrl/Cmd + Delete: Clear all widgets');
+            console.log('  - Escape: Close modals');
+        });
+    </script>
+</body>
+
+</html>

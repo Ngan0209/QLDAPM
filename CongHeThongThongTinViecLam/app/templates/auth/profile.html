@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Trang cá nhân{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3>Thông tin cá nhân</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar }}" alt="Avatar" class="rounded-circle me-3" style="width:120px; height:120px; object-fit:cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary me-3" style="width:120px; height:120px; display:flex; align-items:center; justify-content:center; color:white;">
+                                <span>{{ user.firstname[0]|upper }}{{ user.lastname[0]|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="mb-1">{{ user.firstname }} {{ user.lastname }}</h4>
+                            <p class="mb-0 text-muted">{{ user.user_type|capitalize }}</p>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+                        <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                        <li class="list-group-item"><strong>Số điện thoại:</strong> {{ user.phone or '-' }}</li>
+                        <li class="list-group-item"><strong>Ngày sinh:</strong> {{ user.dob or '-' }}</li>
+                    </ul>
+
+                    {# --- THÔNG TIN CÔNG TY --- #}
+                    {% if company %}
+                        <hr>
+                        <div class="d-flex align-items-center justify-content-between mt-4 mb-3">
+                            <h4 class="text-primary mb-0">Thông tin công ty</h4>
+                            <a href="{{ url_for('company.edit_company') }}" class="btn btn-link p-0" title="Chỉnh sửa thông tin doanh nghiệp">
+                                <i class="bi bi-pencil-square fs-4 text-warning"></i>
+                            </a>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Tên công ty:</strong> {{ company.company_name }}</li>
+                            <li class="list-group-item"><strong>Mã số thuế:</strong> {{ company.company_tax_id or '-' }}</li>
+                            <li class="list-group-item"><strong>Địa chỉ:</strong> {{ company.company_address or '-' }}</li>
+                            <li class="list-group-item"><strong>Loại hình kinh doanh:</strong> {{ company.business_type or '-' }}</li>
+                            <li class="list-group-item"><strong>Người đại diện pháp luật:</strong> {{ company.legal_representative or '-' }}</li>
+                            <li class="list-group-item"><strong>Số điện thoại công ty:</strong> {{ company.phone_contact or '-' }}</li>
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-warning mt-4 text-center">
+                            Bạn chưa tạo thông tin công ty.
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

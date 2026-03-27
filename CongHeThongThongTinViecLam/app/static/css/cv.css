@@ -1,0 +1,474 @@
+
+  :root {
+    --panel-w: 360px;
+    --a4-w: 210mm;
+    --a4-h: 297mm;
+  }
+
+  body {
+    background: #f1f3f5;
+    font-family: "Inter", Arial, Helvetica, sans-serif;
+    margin: 0;
+  }
+
+  .panel {
+    width: var(--panel-w);
+    background: #fff;
+    border-right: 1px solid #e6e9ee;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    padding: 12px;
+    overflow: auto;
+  }
+
+  .panel h3 {
+    margin: 8px 0 6px;
+    font-size: 15px;
+  }
+
+  .control-row {
+    margin-bottom: 10px;
+  }
+
+  .small {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .btn {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 0;
+    cursor: pointer
+  }
+
+  .btn-primary {
+    background: #1976d2;
+    color: white;
+  }
+
+  .btn-ghost {
+    background: #f5f7fa;
+    color: #222;
+    border: 1px solid #e6e9ee;
+  }
+
+  select,
+  input[type="text"],
+  input[type="number"],
+  input[type="color"],
+  .range {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #e0e3e7;
+  }
+
+  .section-list {
+    max-height: 220px;
+    overflow: auto;
+    border: 1px dashed #e6e9ee;
+    padding: 6px;
+    border-radius: 6px;
+  }
+
+  .section-item {
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .section-item.active {
+    background: #eef6ff;
+    border: 1px solid #c9e0ff;
+  }
+
+  .small-ctrls button {
+    margin-left: 6px;
+  }
+
+  /* RIGHT: preview area */
+  .workspace {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    /* preview bên phải */
+    padding: 20px;
+    overflow: auto;
+  }
+
+  .a4 {
+    width: var(--a4-w);
+    min-height: var(--a4-h);
+    background: white;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    padding: 28px;
+    margin-left: 20px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    overflow: auto;
+  }
+
+  /* header */
+  .cv-header {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .cv-builder {
+    display: flex;
+    height: calc(100vh - 70px); /* trừ chiều cao navbar */
+    overflow: hidden;
+  }
+  
+
+  .cv-config {
+    flex: 0 0 320px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow-y: auto;
+  }
+
+  .cv-preview {
+    flex: 1;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    max-width: 800px;
+    overflow-y: auto; 
+  }
+
+  .avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 6px;
+    background: #dfe6ea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 36px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+  }
+
+  /* .section-content .sub-item {
+    margin-bottom: 12px;
+  } */
+
+  .section-content > div:first-child {
+    margin-bottom: 10px;
+  }
+  
+  .sub-item {
+    background-color: #f8f9fa;
+    border-radius: 0 5px 5px 0;
+  }
+  
+  .sub-title {
+    color: #333;
+    font-size: 1.05em;
+  }
+  
+  .sub-meta {
+    color: #666;
+    font-style: italic;
+  }
+  
+  .sub-desc {
+    color: #444;
+    line-height: 1.4;
+  }
+  .sub-item {
+    background: #f8f9fa;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .sub-item:hover {
+    background: #e9ecef;
+  }
+
+  .section-actions .btn {
+    margin-left: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+
+  .modal-content {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .sub-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #222;
+  }
+  
+  .sub-meta {
+    font-size: 12px;
+    color: #777;
+    margin: 2px 0 4px 0;
+  }
+  
+  .sub-desc {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.4;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .avatar .edit-photo {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    display: none;
+    cursor: pointer;
+  }
+
+  .avatar:hover .edit-photo {
+    display: block;
+  }
+
+  .person-info {
+    flex: 1;
+  }
+
+  .person-info h1 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  .person-info .jobtitle {
+    color: #777;
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  .contact-list {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #333;
+  }
+
+  .contact-list div {
+    margin: 4px 0;
+    color: #444;
+  }
+
+  /* sections */
+  .section-block {
+    border-top: 2px solid transparent;
+    padding: 12px 0;
+    margin-bottom: 12px;
+  }
+
+  .section-block h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .section-content {
+    color: #444;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* overlay small controls for each section on preview */
+  .section-actions {
+    float: right;
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .section-actions button {
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 5px;
+    border: 1px solid #eee;
+    cursor: pointer;
+    background: #fff;
+  }
+
+  /* footer controls */
+  .bottom-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+
+  .muted {
+    color: #666;
+    font-size: 13px;
+  }
+
+  /* responsive */
+  @media (max-width:1100px) {
+    .panel {
+      display: none;
+    }
+
+    body {
+      justify-content: center;
+    }
+  }
+
+  /* contenteditable focus style */
+  [contenteditable]:focus {
+    outline: 2px dashed rgba(25, 118, 210, 0.25);
+    border-radius: 4px;
+    padding: 2px;
+  }
+
+  /* Custom Toolbar Styles */
+.toolbar-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.toolbar-group {
+  margin-bottom: 10px;
+}
+
+.toolbar-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.toolbar-group .btn-group .btn {
+  flex: 1;
+}
+
+.toolbar-group .btn.active {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+/* Floating Toolbar */
+.floating-toolbar {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: none;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 300px;
+}
+
+.floating-toolbar.show {
+  display: flex;
+}
+
+.floating-toolbar .btn {
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+/* Edit mode styles */
+.edit-mode-active {
+  outline: 2px dashed #0d6efd;
+  outline-offset: 2px;
+  transition: outline 0.3s ease;
+}
+
+.edit-mode-active:hover {
+  outline-color: #dc3545;
+}
+
+.format-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.edit-mode-active:hover .format-btn {
+  opacity: 1;
+}
+
+/* Preview styles in toolbar */
+#toolPreview {
+  font-family: Arial, Helvetica, sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* Section editing enhancements */
+.section-content [contenteditable="true"]:focus,
+.person-info [contenteditable="true"]:focus {
+  background-color: #f8f9fa;
+  padding: 2px 5px;
+  border-radius: 3px;
+  outline: 1px solid #0d6efd;
+}
+
+/* Responsive toolbar */
+@media (max-width: 768px) {
+  .toolbar-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .floating-toolbar {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90vw;
+  }
+}
+
+/* Style preview classes */
+.preview-heading {
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #1a73e8 !important;
+}
+
+.preview-highlight {
+  background-color: #fff3cd !important;
+  padding: 5px 10px !important;
+  border-left: 3px solid #ffc107 !important;
+}
+
+.preview-quote {
+  font-style: italic !important;
+  color: #6c757d !important;
+  border-left: 3px solid #6c757d !important;
+  padding-left: 10px !important;
+}
